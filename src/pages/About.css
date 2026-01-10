@@ -1,7 +1,7 @@
 .about-page {
   min-height: 100vh;
   padding: 2rem 0 4rem;
-  background: #f8f9fa;
+  background: #FFFFFF;
 }
 
 .container {
@@ -45,7 +45,7 @@
   font-size: 2rem;
   color: #333;
   margin-bottom: 1.5rem;
-  border-bottom: 3px solid #667eea;
+  border-bottom: 3px solid #DC2626;
   padding-bottom: 0.5rem;
 }
 
@@ -68,7 +68,7 @@
   top: 0;
   bottom: 0;
   width: 3px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #DC2626;
 }
 
 .timeline-item {
@@ -85,14 +85,14 @@
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: #667eea;
+  background: #DC2626;
   border: 3px solid white;
-  box-shadow: 0 0 0 2px #667eea;
+  box-shadow: 0 0 0 2px #DC2626;
 }
 
 .timeline-year {
   font-weight: bold;
-  color: #667eea;
+  color: #DC2626;
   font-size: 1.1rem;
   margin-bottom: 0.5rem;
 }
@@ -118,14 +118,16 @@
 .value-card {
   text-align: center;
   padding: 2rem;
-  background: #f8f9fa;
+  background: white;
   border-radius: 12px;
   transition: transform 0.3s, box-shadow 0.3s;
+  border: 2px solid #FFD700;
 }
 
 .value-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 16px rgba(220, 38, 38, 0.2);
+  border-top: 2px solid #DC2626;
 }
 
 .value-icon {
@@ -153,9 +155,9 @@
 
 .offering-item {
   padding: 1.5rem;
-  background: #f8f9fa;
+  background: #FFF9E6;
   border-radius: 8px;
-  border-left: 4px solid #667eea;
+  border-left: 4px solid #DC2626;
 }
 
 .offering-item h3 {
@@ -178,11 +180,12 @@
 
 .location-card {
   padding: 2rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #DC2626;
   color: white;
   border-radius: 12px;
   text-align: center;
   transition: transform 0.3s;
+  border: 2px solid #FFD700;
 }
 
 .location-card:hover {

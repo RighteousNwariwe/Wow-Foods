@@ -1,7 +1,7 @@
 .order-confirmation-page {
   min-height: 100vh;
   padding: 3rem 0 4rem;
-  background: #f8f9fa;
+  background: #FFFFFF;
 }
 
 .container {
@@ -22,7 +22,7 @@
   width: 80px;
   height: 80px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  background: #DC2626;
   color: white;
   font-size: 3rem;
   display: flex;
@@ -30,6 +30,7 @@
   justify-content: center;
   margin: 0 auto 2rem;
   font-weight: bold;
+  border: 4px solid #FFD700;
 }
 
 .confirmation-content h1 {
@@ -53,10 +54,11 @@
 .order-info-card,
 .delivery-info-card,
 .items-card {
-  background: #f8f9fa;
+  background: #FFF9E6;
   padding: 2rem;
   border-radius: 8px;
   margin-bottom: 2rem;
+  border: 2px solid #FFD700;
 }
 
 .order-info-card h2,
@@ -108,7 +110,7 @@
 .total-amount {
   font-size: 1.25rem;
   font-weight: bold;
-  color: #667eea;
+  color: #DC2626;
 }
 
 .order-items-list {
@@ -144,7 +146,7 @@
 
 .item-price {
   font-weight: 600;
-  color: #667eea;
+  color: #DC2626;
 }
 
 .items-total {
@@ -158,10 +160,11 @@
 }
 
 .next-steps {
-  background: #e7f3ff;
+  background: #FFF9E6;
   padding: 2rem;
   border-radius: 8px;
   margin-bottom: 3rem;
+  border: 2px solid #FFD700;
 }
 
 .next-steps h2 {
@@ -178,7 +181,7 @@
 
 .estimated-time {
   font-weight: 600;
-  color: #667eea;
+  color: #DC2626;
   margin-top: 1rem;
 }
 
@@ -199,23 +202,25 @@
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #DC2626;
   color: white;
+  border: 2px solid #FFD700;
 }
 
 .btn-primary:hover {
+  background: #B91C1C;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
 }
 
 .btn-secondary {
   background: white;
-  color: #667eea;
-  border: 2px solid #667eea;
+  color: #DC2626;
+  border: 2px solid #DC2626;
 }
 
 .btn-secondary:hover {
-  background: #667eea;
+  background: #DC2626;
   color: white;
 }
 

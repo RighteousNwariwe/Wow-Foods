@@ -1,7 +1,7 @@
 .products-page {
   min-height: 100vh;
   padding: 2rem 0 4rem;
-  background: #f8f9fa;
+  background: #FFFFFF;
 }
 
 .container {
@@ -46,7 +46,7 @@
 
 .search-input:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: #DC2626;
 }
 
 .category-filters {
@@ -59,20 +59,23 @@
   padding: 0.75rem 1.5rem;
   border-radius: 8px;
   background: white;
-  color: #667eea;
-  border: 2px solid #667eea;
+  color: #DC2626;
+  border: 2px solid #DC2626;
   font-weight: 500;
   transition: all 0.3s;
 }
 
 .category-btn:hover {
-  background: #f0f0f0;
+  background: #FFF9E6;
+  border-color: #FFD700;
+  color: #000000;
 }
 
 .category-btn.active {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #DC2626;
   color: white;
-  border-color: transparent;
+  border-color: #FFD700;
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
 }
 
 .products-grid {

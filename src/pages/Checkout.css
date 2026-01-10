@@ -1,7 +1,7 @@
 .checkout-page {
   min-height: 100vh;
   padding: 2rem 0 4rem;
-  background: #f8f9fa;
+  background: #FFFFFF;
 }
 
 .container {
@@ -64,7 +64,7 @@
 .form-group select:focus,
 .form-group textarea:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: #DC2626;
 }
 
 .form-group input.error,
@@ -88,17 +88,19 @@
   width: 100%;
   padding: 1rem;
   margin-top: 1rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #DC2626;
   color: white;
   border-radius: 8px;
   font-weight: 600;
   font-size: 1.1rem;
   transition: all 0.3s;
+  border: 2px solid #FFD700;
 }
 
 .submit-btn:hover:not(:disabled) {
+  background: #B91C1C;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
 }
 
 .submit-btn:disabled {
@@ -157,7 +159,7 @@
 
 .item-total {
   font-weight: 600;
-  color: #667eea;
+  color: #DC2626;
 }
 
 .order-totals {

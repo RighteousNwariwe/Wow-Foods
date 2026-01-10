@@ -55,17 +55,18 @@
   width: 32px;
   height: 32px;
   border-radius: 6px;
-  background: #667eea;
+  background: #DC2626;
   color: white;
   font-weight: bold;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: background 0.3s;
+  border: 1px solid #FFD700;
 }
 
 .quantity-controls button:hover {
-  background: #764ba2;
+  background: #B91C1C;
 }
 
 .quantity-controls input {
@@ -79,13 +80,13 @@
 
 .quantity-controls input:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: #DC2626;
 }
 
 .cart-item-total {
   font-size: 1.25rem;
   font-weight: bold;
-  color: #667eea;
+  color: #DC2626;
 }
 
 .remove-btn {

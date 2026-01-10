@@ -3,10 +3,11 @@
 }
 
 .hero {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #000000;
   color: white;
   padding: 4rem 2rem;
   text-align: center;
+  border-bottom: 4px solid #FFD700;
 }
 
 .hero-content {
@@ -49,34 +50,36 @@
 }
 
 .btn-primary {
-  background: white;
-  color: #667eea;
+  background: #DC2626;
+  color: white;
+  border: 2px solid #FFD700;
 }
 
 .btn-primary:hover {
+  background: #B91C1C;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
 }
 
 .btn-secondary {
   background: transparent;
   color: white;
-  border: 2px solid white;
+  border: 2px solid #FFD700;
 }
 
 .btn-secondary:hover {
-  background: white;
-  color: #667eea;
+  background: #FFD700;
+  color: #000000;
 }
 
 .btn-outline {
   background: transparent;
-  color: #667eea;
-  border: 2px solid #667eea;
+  color: #DC2626;
+  border: 2px solid #DC2626;
 }
 
 .btn-outline:hover {
-  background: #667eea;
+  background: #DC2626;
   color: white;
 }
 
@@ -108,13 +111,15 @@
   text-align: center;
   padding: 2rem;
   border-radius: 12px;
-  background: #f8f9fa;
+  background: white;
+  border: 2px solid #FFD700;
   transition: transform 0.3s, box-shadow 0.3s;
 }
 
 .feature:hover {
   transform: translateY(-5px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 16px rgba(220, 38, 38, 0.2);
+  border-color: #DC2626;
 }
 
 .feature-icon {
@@ -135,7 +140,7 @@
 
 .featured-products {
   padding: 4rem 2rem;
-  background: #f8f9fa;
+  background: #FFF9E6;
 }
 
 .featured-products h2 {
@@ -197,7 +202,7 @@
 .price {
   font-size: 1.5rem;
   font-weight: bold;
-  color: #667eea;
+  color: #DC2626;
 }
 
 .view-all {
@@ -206,8 +211,9 @@
 
 .operating-hours {
   padding: 4rem 2rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #DC2626;
   color: white;
+  border-top: 4px solid #FFD700;
 }
 
 .operating-hours h2 {

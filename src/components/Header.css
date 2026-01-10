@@ -1,11 +1,12 @@
 .header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #000000;
   color: white;
   padding: 1rem 0;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
   position: sticky;
   top: 0;
   z-index: 1000;
+  border-bottom: 3px solid #FFD700;
 }
 
 .header-container {
@@ -19,14 +20,30 @@
   gap: 1rem;
 }
 
-.logo h1 {
-  font-size: 1.8rem;
-  margin-bottom: 0.2rem;
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  text-decoration: none;
 }
 
-.logo p {
+.logo-image {
+  height: 60px;
+  width: auto;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+.logo-text h1 {
+  font-size: 1.8rem;
+  margin-bottom: 0.2rem;
+  color: #FFD700;
+}
+
+.logo-text p {
   font-size: 0.9rem;
   opacity: 0.9;
+  color: white;
 }
 
 .nav {
@@ -46,12 +63,15 @@
 }
 
 .nav a:hover {
-  opacity: 0.8;
-  background: rgba(255, 255, 255, 0.1);
+  opacity: 0.9;
+  background: rgba(255, 215, 0, 0.2);
+  color: #FFD700;
 }
 
 .nav a.active {
-  background: rgba(255, 255, 255, 0.2);
+  background: #DC2626;
+  color: white;
+  border-bottom: 2px solid #FFD700;
 }
 
 .cart-link {
@@ -62,7 +82,7 @@
 }
 
 .cart-badge {
-  background: #ff4757;
+  background: #DC2626;
   color: white;
   border-radius: 50%;
   width: 20px;
@@ -75,6 +95,7 @@
   position: absolute;
   top: -5px;
   right: -5px;
+  border: 2px solid #FFD700;
 }
 
 @media (max-width: 768px) {
@@ -87,7 +108,11 @@
     gap: 1rem;
   }
   
-  .logo h1 {
+  .logo-image {
+    height: 50px;
+  }
+  
+  .logo-text h1 {
     font-size: 1.5rem;
   }
 }

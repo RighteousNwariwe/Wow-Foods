@@ -1,7 +1,7 @@
 .catering-page {
   min-height: 100vh;
   padding: 2rem 0 4rem;
-  background: #f8f9fa;
+  background: #FFFFFF;
 }
 
 .container {
@@ -50,6 +50,7 @@
   padding: 1.5rem;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-left: 4px solid #DC2626;
 }
 
 .feature-icon {
@@ -153,7 +154,7 @@
 .form-group select:focus,
 .form-group textarea:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: #DC2626;
 }
 
 .form-group textarea {
@@ -162,17 +163,19 @@
 
 .submit-btn {
   padding: 1rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #DC2626;
   color: white;
   border-radius: 8px;
   font-weight: 600;
   font-size: 1rem;
   transition: all 0.3s;
+  border: 2px solid #FFD700;
 }
 
 .submit-btn:hover {
+  background: #B91C1C;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
 }
 
 .success-message {

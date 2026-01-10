@@ -14,8 +14,11 @@ const Header = () => {
     <header className="header">
       <div className="header-container">
         <Link to="/" className="logo">
-          <h1>Woow Foods</h1>
-          <p>Healthy & Affordable Food</p>
+          <img src="/logo.jpeg" alt="Woow Foods Logo" className="logo-image" />
+          <div className="logo-text">
+            <h1>Woow Foods</h1>
+            <p>Healthy & Affordable Food</p>
+          </div>
         </Link>
         
         <nav className="nav">
