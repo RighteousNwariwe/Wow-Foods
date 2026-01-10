@@ -12,7 +12,16 @@ export const useCart = () => {
 
 export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState([]);
-  const [orders, setOrders] = useState([]);
+  // Initialize orders from localStorage if available
+  const [orders, setOrders] = useState(() => {
+    try {
+      const storedOrders = localStorage.getItem('woowFoodsOrders');
+      return storedOrders ? JSON.parse(storedOrders) : [];
+    } catch (error) {
+      console.error('Error loading orders from localStorage:', error);
+      return [];
+    }
+  });
 
   const addToCart = (product, quantity = 1) => {
     setCartItems(prevItems => {
@@ -59,17 +68,55 @@ export const CartProvider = ({ children }) => {
     return cartItems.reduce((count, item) => count + item.quantity, 0);
   };
 
+  const generateOrderNumber = () => {
+    // Get today's date in YYYY-MM-DD format
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+    
+    // Get existing orders from localStorage or use current orders
+    const storedOrders = JSON.parse(localStorage.getItem('woowFoodsOrders') || '[]');
+    
+    // Filter orders from today
+    const todayOrders = storedOrders.filter(order => {
+      const orderDate = new Date(order.date).toISOString().split('T')[0];
+      return orderDate === todayStr;
+    });
+    
+    // Generate order number (0-indexed for today)
+    const orderNumber = todayOrders.length;
+    
+    // Format: YYYYMMDD-XXX (e.g., 20240115-000)
+    const dateStr = todayStr.replace(/-/g, '');
+    return `${dateStr}-${String(orderNumber).padStart(3, '0')}`;
+  };
+
   const placeOrder = (orderData) => {
+    const orderId = generateOrderNumber();
+    // Use total from orderData if provided (includes delivery fee), otherwise use cart total
+    const orderTotal = orderData.total !== undefined ? orderData.total : getCartTotal();
     const order = {
-      id: Date.now().toString(),
+      id: orderId,
       items: [...cartItems],
-      total: getCartTotal(),
+      subtotal: orderData.subtotal !== undefined ? orderData.subtotal : getCartTotal(),
+      deliveryFee: orderData.deliveryFee !== undefined ? orderData.deliveryFee : 0,
+      total: orderTotal,
       ...orderData,
       date: new Date().toISOString(),
       status: 'pending'
     };
     
-    setOrders(prevOrders => [order, ...prevOrders]);
+    setOrders(prevOrders => {
+      const updatedOrders = [order, ...prevOrders];
+      // Store in localStorage for order number persistence
+      localStorage.setItem('woowFoodsOrders', JSON.stringify(updatedOrders));
+      return updatedOrders;
+    });
+    
+    // Also update localStorage
+    const storedOrders = JSON.parse(localStorage.getItem('woowFoodsOrders') || '[]');
+    storedOrders.unshift(order);
+    localStorage.setItem('woowFoodsOrders', JSON.stringify(storedOrders));
+    
     clearCart();
     return order;
   };

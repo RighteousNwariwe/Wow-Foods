@@ -47,12 +47,30 @@ const Checkout = () => {
     
     if (!formData.email.trim()) {
       newErrors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email is invalid';
+    } else {
+      // More strict email validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(formData.email)) {
+        newErrors.email = 'Please enter a valid email address';
+      } else {
+        // Check for common email domain issues
+        const domain = formData.email.split('@')[1];
+        if (!domain || !domain.includes('.')) {
+          newErrors.email = 'Please enter a valid email address';
+        }
+      }
     }
     
     if (!formData.phone.trim()) {
       newErrors.phone = 'Phone number is required';
+    } else {
+      // Validate South African phone number
+      // Accepts formats: +27XXXXXXXXX, 0XXXXXXXXX, 27XXXXXXXXX
+      const phoneRegex = /^(\+?27|0)[1-9]\d{8}$/;
+      const cleanedPhone = formData.phone.replace(/\s|-/g, '');
+      if (!phoneRegex.test(cleanedPhone)) {
+        newErrors.phone = 'Please enter a valid South African phone number (e.g., +27 12 345 6789 or 012 345 6789)';
+      }
     }
     
     if (!formData.campus) {
@@ -78,7 +96,12 @@ const Checkout = () => {
     
     // Simulate API call
     setTimeout(() => {
-      const order = placeOrder(formData);
+      const order = placeOrder({
+        ...formData,
+        subtotal: subtotal,
+        deliveryFee: deliveryFee,
+        total: total
+      });
       setIsSubmitting(false);
       navigate('/order-confirmation', { state: { order } });
     }, 1500);

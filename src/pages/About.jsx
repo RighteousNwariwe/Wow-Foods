@@ -7,7 +7,7 @@ const About = () => {
       <div className="container">
         <div className="page-header">
           <h1>About Woow Foods</h1>
-          <p>Healthy, Affordable, and Delicious Food for CPUT</p>
+          <p>Healthy, Affordable, and Delicious Food </p>
         </div>
 
         <div className="about-content">
@@ -42,7 +42,7 @@ const About = () => {
                 <div className="timeline-year">2017-2018</div>
                 <div className="timeline-content">
                   <h3>Expansion</h3>
-                  <p>Expanded to a mobile kitchen that moved around various locations in Bellville, including the University of the Western Cape.</p>
+                  <p>Expanded to a mobile kitchen that moved around various locations in Mowbray, including the University of the Western Cape.</p>
                 </div>
               </div>
               <div className="timeline-item">
@@ -93,7 +93,7 @@ const About = () => {
             <div className="offerings">
               <div className="offering-item">
                 <h3>Daily Operations</h3>
-                <p>Operating daily from 7:30 AM to 7:30 PM in CPUT cafeterias across Cape Town, Bellville, and D6 campuses.</p>
+                <p>Operating daily from 7:30 AM to 7:30 PM in CPUT cafeterias across Cape Town, Mowbray, and D6 campuses.</p>
               </div>
               <div className="offering-item">
                 <h3>Menu Variety</h3>
@@ -128,8 +128,8 @@ const About = () => {
                 <p>The busiest location, operating daily from 7:30 AM to 7:30 PM</p>
               </div>
               <div className="location-card">
-                <h3>Bellville Campus</h3>
-                <p>Serving students and staff in the Bellville area</p>
+                <h3>Mowbray Campus</h3>
+                <p>Serving students and staff in the Mowbray area</p>
               </div>
               <div className="location-card">
                 <h3>D6 Campus</h3>
