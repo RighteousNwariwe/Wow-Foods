@@ -34,7 +34,7 @@ const Header = () => {
           <Link to="/about" className={isActive('/about') ? 'active' : ''}>
             About
           </Link>
-          <Link to="/admin/orders" className={isActive('/admin/orders') ? 'active' : ''}>
+          <Link to="/admin/login" className={isActive('/admin/login') || isActive('/admin/orders') ? 'active' : ''}>
             Admin
           </Link>
           <Link to="/cart" className={`cart-link ${isActive('/cart') ? 'active' : ''}`}>

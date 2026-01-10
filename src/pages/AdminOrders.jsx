@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import './AdminOrders.css';
 
 const AdminOrders = () => {
   const { orders, updateOrderStatus } = useCart();
+  const navigate = useNavigate();
   const [filteredOrders, setFilteredOrders] = useState([]);
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedOrder, setSelectedOrder] = useState(null);
@@ -14,6 +16,8 @@ const AdminOrders = () => {
     pending: 0,
     verified: 0,
     in_preparation: 0,
+    ready_for_collection: 0,
+    out_for_delivery: 0,
     delivered: 0
   });
 
@@ -42,6 +46,8 @@ const AdminOrders = () => {
       pending: sortedOrders.filter(o => o.status === 'pending').length,
       verified: sortedOrders.filter(o => o.status === 'verified').length,
       in_preparation: sortedOrders.filter(o => o.status === 'in_preparation').length,
+      ready_for_collection: sortedOrders.filter(o => o.status === 'ready_for_collection').length,
+      out_for_delivery: sortedOrders.filter(o => o.status === 'out_for_delivery').length,
       delivered: sortedOrders.filter(o => o.status === 'delivered').length
     });
     
@@ -66,7 +72,100 @@ const AdminOrders = () => {
     });
   };
 
+  const formatOrderSummary = (order) => {
+    const itemsList = order.items.map(item => 
+      `• ${item.name} x${item.quantity} - R${(item.price * item.quantity).toFixed(2)}`
+    ).join('\n');
+
+    const subtotalLine = order.subtotal !== undefined ? `Subtotal: R${order.subtotal.toFixed(2)}` : '';
+    const deliveryLine = order.deliveryFee !== undefined 
+      ? `Delivery Fee: ${order.deliveryFee === 0 ? 'Free!' : `R${order.deliveryFee.toFixed(2)}`}`
+      : '';
+
+    return `Order Number: #${order.id}
+Date: ${formatDate(order.date)}
+
+Customer: ${order.name}
+Campus: ${order.campus}
+Address: ${order.address}
+
+Order Items:
+${itemsList}
+
+Order Summary:
+${subtotalLine ? subtotalLine + '\n' : ''}${deliveryLine ? deliveryLine + '\n' : ''}Total: R${order.total.toFixed(2)}`;
+  };
+
+  const sendNotification = (order, status) => {
+    const orderSummary = formatOrderSummary(order);
+    let message = '';
+    
+    switch (status) {
+      case 'verified':
+        message = `✅ ORDER VERIFIED\n\nHello ${order.name},\n\nYour order has been received and payment verified!\n\n${orderSummary}\n\nWe are now preparing your order. You will be notified when it's ready.\n\nThank you for ordering from Woow Foods! 🍽️`;
+        break;
+      case 'ready_for_collection':
+        message = `🎉 ORDER READY FOR COLLECTION\n\nHello ${order.name},\n\nYour order is ready for collection!\n\n${orderSummary}\n\nPlease come to collect your order at:\n📍 ${order.campus}\n\nWe look forward to serving you!\n\nThank you, Woow Foods 🍽️`;
+        break;
+      case 'out_for_delivery':
+        message = `🚚 ORDER OUT FOR DELIVERY\n\nHello ${order.name},\n\nGreat news! Your order is out for delivery.\n\n${orderSummary}\n\nDelivery Address: ${order.address}\n\nOur delivery person will be arriving shortly. Please ensure someone is available to receive the order.\n\nThank you, Woow Foods 🍽️`;
+        break;
+      default:
+        return;
+    }
+
+    // Send via WhatsApp
+    if (order.phone) {
+      // Clean phone number: remove spaces, dashes, parentheses, and + sign
+      let cleanNumber = order.phone.replace(/\s|-|\(|\)|\+/g, '');
+      
+      // Convert to international format for South Africa
+      if (cleanNumber.startsWith('0')) {
+        // Replace leading 0 with 27
+        cleanNumber = '27' + cleanNumber.substring(1);
+      } else if (cleanNumber.startsWith('27')) {
+        // Already in correct format (27XXXXXXXXX)
+      } else if (!cleanNumber.startsWith('27')) {
+        // Add 27 prefix if not present
+        cleanNumber = '27' + cleanNumber;
+      }
+      
+      // Ensure it's 11 digits (27 + 9 digits)
+      if (cleanNumber.length === 11) {
+        const whatsappUrl = `https://wa.me/${cleanNumber}?text=${encodeURIComponent(message)}`;
+        window.open(whatsappUrl, '_blank');
+      } else {
+        console.warn('Invalid phone number format:', order.phone);
+        alert(`Could not send WhatsApp notification. Invalid phone number format: ${order.phone}`);
+      }
+    }
+
+    // Send via Email
+    if (order.email) {
+      const emailSubject = encodeURIComponent(`Order #${order.id} Update - Woow Foods`);
+      const emailBody = encodeURIComponent(message);
+      const emailUrl = `mailto:${order.email}?subject=${emailSubject}&body=${emailBody}`;
+      
+      // Delay email to allow WhatsApp to open first
+      setTimeout(() => {
+        window.location.href = emailUrl;
+      }, 1000);
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('adminAuthenticated');
+    localStorage.removeItem('adminLoginTime');
+    navigate('/admin/login');
+  };
+
   const handleStatusChange = (orderId, newStatus) => {
+    // Get the order before updating
+    const storedOrders = getAllOrders();
+    const order = storedOrders.find(o => o.id === orderId);
+    
+    if (!order) return;
+
     let verified = null;
     if (newStatus === 'verified') {
       verified = true;
@@ -75,10 +174,21 @@ const AdminOrders = () => {
     // Update via context (which also updates localStorage)
     updateOrderStatus(orderId, newStatus, verified);
     
+    // Send notification for specific statuses
+    if (newStatus === 'verified' || newStatus === 'ready_for_collection' || newStatus === 'out_for_delivery') {
+      // Update order status in the local order object
+      const updatedOrder = { ...order, status: newStatus };
+      if (verified) {
+        updatedOrder.verified = true;
+        updatedOrder.verifiedAt = new Date().toISOString();
+      }
+      sendNotification(updatedOrder, newStatus);
+    }
+    
     // Force refresh by updating filtered orders
     setTimeout(() => {
-      const storedOrders = getAllOrders();
-      const sortedOrders = [...storedOrders].sort((a, b) => {
+      const updatedStoredOrders = getAllOrders();
+      const sortedOrders = [...updatedStoredOrders].sort((a, b) => {
         const dateA = new Date(a.date || 0);
         const dateB = new Date(b.date || 0);
         return dateB - dateA;
@@ -89,6 +199,8 @@ const AdminOrders = () => {
         pending: sortedOrders.filter(o => o.status === 'pending').length,
         verified: sortedOrders.filter(o => o.status === 'verified').length,
         in_preparation: sortedOrders.filter(o => o.status === 'in_preparation').length,
+        ready_for_collection: sortedOrders.filter(o => o.status === 'ready_for_collection').length,
+        out_for_delivery: sortedOrders.filter(o => o.status === 'out_for_delivery').length,
         delivered: sortedOrders.filter(o => o.status === 'delivered').length
       });
       
@@ -111,6 +223,10 @@ const AdminOrders = () => {
         return 'status-verified';
       case 'in_preparation':
         return 'status-preparation';
+      case 'ready_for_collection':
+        return 'status-collection';
+      case 'out_for_delivery':
+        return 'status-delivery';
       case 'delivered':
         return 'status-delivered';
       case 'pending':
@@ -125,8 +241,12 @@ const AdminOrders = () => {
         return '✅ Verified';
       case 'in_preparation':
         return '👨‍🍳 In Preparation';
+      case 'ready_for_collection':
+        return '📦 Ready for Collection';
+      case 'out_for_delivery':
+        return '🚚 Out for Delivery';
       case 'delivered':
-        return '🚚 Delivered';
+        return '🎉 Delivered';
       case 'pending':
       default:
         return '⏳ Pending';
@@ -137,8 +257,13 @@ const AdminOrders = () => {
     <div className="admin-orders-page">
       <div className="container">
         <div className="admin-header">
-          <h1>📋 Order Management</h1>
-          <p className="admin-subtitle">View and verify customer orders</p>
+          <div>
+            <h1>📋 Order Management</h1>
+            <p className="admin-subtitle">View and verify customer orders</p>
+          </div>
+          <button className="btn-logout" onClick={handleLogout}>
+            🚪 Logout
+          </button>
         </div>
 
         <div className="filter-section">
@@ -166,6 +291,18 @@ const AdminOrders = () => {
               onClick={() => setStatusFilter('in_preparation')}
             >
               In Preparation ({orderCounts.in_preparation})
+            </button>
+            <button
+              className={`filter-tab ${statusFilter === 'ready_for_collection' ? 'active' : ''}`}
+              onClick={() => setStatusFilter('ready_for_collection')}
+            >
+              Ready for Collection ({orderCounts.ready_for_collection})
+            </button>
+            <button
+              className={`filter-tab ${statusFilter === 'out_for_delivery' ? 'active' : ''}`}
+              onClick={() => setStatusFilter('out_for_delivery')}
+            >
+              Out for Delivery ({orderCounts.out_for_delivery})
             </button>
             <button
               className={`filter-tab ${statusFilter === 'delivered' ? 'active' : ''}`}
@@ -274,7 +411,9 @@ const AdminOrders = () => {
                     <option value="pending">⏳ Pending</option>
                     <option value="verified">✅ Verified</option>
                     <option value="in_preparation">👨‍🍳 In Preparation</option>
-                    <option value="delivered">🚚 Delivered</option>
+                    <option value="ready_for_collection">📦 Ready for Collection</option>
+                    <option value="out_for_delivery">🚚 Out for Delivery</option>
+                    <option value="delivered">🎉 Delivered</option>
                   </select>
                 </div>
 
@@ -326,11 +465,12 @@ const AdminOrders = () => {
                 onClick={() => {
                   if (selectedOrder.status !== 'verified') {
                     handleStatusChange(selectedOrder.id, 'verified');
+                    // Notification will be sent by handleStatusChange
                   }
                   setShowProofModal(false);
                 }}
               >
-                ✅ Verify Payment
+                ✅ Verify Payment & Notify Customer
               </button>
               <button
                 className="btn btn-secondary"

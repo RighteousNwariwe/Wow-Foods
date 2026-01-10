@@ -12,6 +12,15 @@
 
 .admin-header {
   margin-bottom: 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.admin-header > div {
+  flex: 1;
   text-align: center;
 }
 
@@ -24,6 +33,25 @@
 .admin-subtitle {
   font-size: 1.1rem;
   color: #666;
+}
+
+.btn-logout {
+  padding: 0.75rem 1.5rem;
+  background: #DC2626;
+  color: white;
+  border: 2px solid #FFD700;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s;
+  white-space: nowrap;
+}
+
+.btn-logout:hover {
+  background: #B91C1C;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
 }
 
 .filter-section {
@@ -130,6 +158,16 @@
 }
 
 .status-badge.status-preparation {
+  background: #CCE5FF;
+  color: #004085;
+}
+
+.status-badge.status-collection {
+  background: #FFF3CD;
+  color: #856404;
+}
+
+.status-badge.status-delivery {
   background: #CCE5FF;
   color: #004085;
 }
@@ -437,6 +475,19 @@
 }
 
 @media (max-width: 768px) {
+  .admin-header {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .admin-header > div {
+    width: 100%;
+  }
+
+  .btn-logout {
+    width: 100%;
+  }
+
   .orders-grid {
     grid-template-columns: 1fr;
   }
