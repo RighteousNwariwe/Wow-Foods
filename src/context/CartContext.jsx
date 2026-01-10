@@ -73,25 +73,29 @@ export const CartProvider = ({ children }) => {
     const today = new Date();
     const todayStr = today.toISOString().split('T')[0];
     
-    // Get existing orders from localStorage or use current orders
+    // Get existing orders from localStorage
     const storedOrders = JSON.parse(localStorage.getItem('woowFoodsOrders') || '[]');
     
-    // Filter orders from today
+    // Filter orders from today only
     const todayOrders = storedOrders.filter(order => {
+      if (!order.date) return false;
       const orderDate = new Date(order.date).toISOString().split('T')[0];
       return orderDate === todayStr;
     });
     
-    // Generate order number (0-indexed for today)
+    // Generate order number - this will be the next number (0-indexed)
+    // e.g., if 3 orders exist today (0, 1, 2), the next will be 3
     const orderNumber = todayOrders.length;
     
-    // Format: YYYYMMDD-XXX (e.g., 20240115-000)
+    // Format: YYYYMMDD-XXX (e.g., 20240115-000, 20240115-001, etc.)
     const dateStr = todayStr.replace(/-/g, '');
     return `${dateStr}-${String(orderNumber).padStart(3, '0')}`;
   };
 
   const placeOrder = (orderData) => {
+    // Generate order number BEFORE creating the order to ensure correct incrementing
     const orderId = generateOrderNumber();
+    
     // Use total from orderData if provided (includes delivery fee), otherwise use cart total
     const orderTotal = orderData.total !== undefined ? orderData.total : getCartTotal();
     const order = {
@@ -102,23 +106,41 @@ export const CartProvider = ({ children }) => {
       total: orderTotal,
       ...orderData,
       date: new Date().toISOString(),
-      status: 'pending'
+      status: 'pending',
+      verified: false,
+      verifiedAt: null
     };
     
+    // Update both state and localStorage atomically
     setOrders(prevOrders => {
       const updatedOrders = [order, ...prevOrders];
-      // Store in localStorage for order number persistence
       localStorage.setItem('woowFoodsOrders', JSON.stringify(updatedOrders));
       return updatedOrders;
     });
     
-    // Also update localStorage
-    const storedOrders = JSON.parse(localStorage.getItem('woowFoodsOrders') || '[]');
-    storedOrders.unshift(order);
-    localStorage.setItem('woowFoodsOrders', JSON.stringify(storedOrders));
-    
     clearCart();
     return order;
+  };
+
+  const updateOrderStatus = (orderId, status, verified = null) => {
+    setOrders(prevOrders => {
+      const updatedOrders = prevOrders.map(order => {
+        if (order.id === orderId) {
+          const updated = {
+            ...order,
+            status,
+            ...(verified !== null && {
+              verified,
+              verifiedAt: verified ? new Date().toISOString() : null
+            })
+          };
+          return updated;
+        }
+        return order;
+      });
+      localStorage.setItem('woowFoodsOrders', JSON.stringify(updatedOrders));
+      return updatedOrders;
+    });
   };
 
   const value = {
@@ -130,7 +152,8 @@ export const CartProvider = ({ children }) => {
     getCartTotal,
     getCartItemCount,
     placeOrder,
-    orders
+    orders,
+    updateOrderStatus
   };
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

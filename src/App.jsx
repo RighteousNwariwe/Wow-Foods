@@ -10,6 +10,7 @@ import Checkout from './pages/Checkout';
 import OrderConfirmation from './pages/OrderConfirmation';
 import Catering from './pages/Catering';
 import About from './pages/About';
+import AdminOrders from './pages/AdminOrders';
 import './App.css';
 
 function App() {
@@ -27,6 +28,7 @@ function App() {
               <Route path="/order-confirmation" element={<OrderConfirmation />} />
               <Route path="/catering" element={<Catering />} />
               <Route path="/about" element={<About />} />
+              <Route path="/admin/orders" element={<AdminOrders />} />
             </Routes>
           </main>
           <Footer />
