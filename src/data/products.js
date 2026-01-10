@@ -5,7 +5,7 @@ export const products = [
     name: 'Kota',
     category: 'meals',
     price: 45,
-    image: 'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=400',
+    image: 'https://www.sandwichtribunal.com/wp-content/uploads/2022/08/IMG_6502.jpg',
     description: 'Traditional Cape Town kotas with chips, polony, Russian, cheese, and egg.',
     inStock: true
   },
@@ -14,7 +14,7 @@ export const products = [
     name: 'Vetkoek',
     category: 'meals',
     price: 25,
-    image: 'https://images.unsplash.com/photo-1482049016688-2d3e1b311543?w=400',
+    image: 'https://lifestylefoods.co.za/wordpress22/wp-content/uploads/2022/06/Vetkoek_WP_Blog_Feature.jpg',
     description: 'Freshly made vetkoek filled with your choice of mince, cheese, or jam.',
     inStock: true
   },
