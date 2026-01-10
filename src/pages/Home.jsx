@@ -34,12 +34,12 @@ const Home = () => {
     <div className="home">
       <section className="hero">
         <div className="hero-content">
-          <h1>Welcome to Woow Foods</h1>
+          <h1>Welcome to Wow Foods</h1>
           <p className="hero-subtitle">
             Healthy, Affordable & Delicious Food for CPUT Students and Staff
           </p>
           <p className="hero-description">
-            Located in CPUT campuses across Cape Town, we bring you fresh, healthier alternatives 
+            Located in CPUT campuses, D6 and Mowbray, we bring you fresh, healthier alternatives 
             to street food with exceptional customer service.
           </p>
           <div className="hero-buttons">
@@ -55,7 +55,7 @@ const Home = () => {
 
       <section className="features">
         <div className="container">
-          <h2>Why Choose Woow Foods?</h2>
+          <h2>Why Choose Wow Foods?</h2>
           <div className="features-grid">
             <div className="feature">
               <div className="feature-icon">🍔</div>
@@ -75,7 +75,7 @@ const Home = () => {
             <div className="feature">
               <div className="feature-icon">📍</div>
               <h3>Convenient Locations</h3>
-              <p>Located in CPUT cafeterias across Cape Town, Bellville, and D6 campuses.</p>
+              <p>Located in CPUT cafeterias across Cape Town, D6 and Mowbray campuses.</p>
             </div>
           </div>
         </div>
