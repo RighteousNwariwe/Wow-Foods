@@ -23,7 +23,7 @@ export const products = [
     name: 'Chip Roll',
     category: 'meals',
     price: 20,
-    image: 'https://images.unsplash.com/photo-1481070555726-e2fe8357725c?w=400',
+    image: 'https://th.bing.com/th/id/R.51b669fb1c77ffdb1a4421729179c56c?rik=ZxiPwGpUafffUQ&riu=http%3a%2f%2fwww.thesouthafrican.com%2fwp-content%2fuploads%2f2014%2f06%2fdscf1848copyby31.jpg&ehk=%2fNRAp6TpXRdjza154I%2fa0GZowSJXOi2omfddyLsvPXU%3d&risl=&pid=ImgRaw&r=0',
     description: 'Crispy chips rolled in fresh bread with sauce.',
     inStock: true
   },
@@ -77,7 +77,7 @@ export const products = [
     name: 'Water',
     category: 'beverages',
     price: 10,
-    image: 'https://images.unsplash.com/photo-1548839140-5a059f81a7f5?w=400',
+    image: 'https://th.bing.com/th/id/R.028e17a73003c354c39c80ddfadce91a?rik=mdHFvy%2bCZ9%2f3Sg&pid=ImgRaw&r=0',
     description: 'Purified bottled water.',
     inStock: true
   },
