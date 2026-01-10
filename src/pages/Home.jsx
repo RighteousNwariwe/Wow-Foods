@@ -11,7 +11,7 @@ const Home = () => {
       id: 1,
       name: 'Kota',
       price: 45,
-      image: 'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=400',
+      image: 'https://www.sandwichtribunal.com/wp-content/uploads/2022/08/IMG_6502.jpg',
       description: 'Traditional Cape Town kotas with chips, polony, Russian, cheese, and egg.'
     },
     {
