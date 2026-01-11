@@ -123,7 +123,7 @@ Status: ${order.status.toUpperCase()}`;
     
     setIsSubmitting(true);
     
-    const subject = encodeURIComponent(`New Order #${order.id} - Woow Foods`);
+    const subject = encodeURIComponent(`New Order #${order.id} - Wow Foods`);
     const body = encodeURIComponent(
       formatOrderSummary() + 
       '\n\nPlease attach the proof of payment image to this email.'

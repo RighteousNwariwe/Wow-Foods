@@ -7,7 +7,7 @@ const Footer = () => {
     <footer className="footer">
       <div className="footer-container">
         <div className="footer-section">
-          <h3>Woow Foods</h3>
+          <h3>Wow Foods</h3>
           <p>Healthy, affordable, and delicious food for CPUT students and staff.</p>
           <p>Operating Hours: 7:30 AM - 7:30 PM</p>
         </div>
@@ -41,7 +41,7 @@ const Footer = () => {
       </div>
       
       <div className="footer-bottom">
-        <p>&copy; {new Date().getFullYear()} Woow Foods. All rights reserved.</p>
+        <p>&copy; {new Date().getFullYear()} Wow Foods. All rights reserved.</p>
       </div>
     </footer>
   );

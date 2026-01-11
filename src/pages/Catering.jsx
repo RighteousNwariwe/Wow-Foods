@@ -50,12 +50,12 @@ const Catering = () => {
       <div className="container">
         <div className="page-header">
           <h1>Catering Services</h1>
-          <p>Let Woow Foods cater your next event, workshop, or gathering</p>
+          <p>Let Wow Foods cater your next event, workshop, or gathering</p>
         </div>
 
         <div className="catering-content">
           <div className="catering-info">
-            <h2>Why Choose Woow Foods Catering?</h2>
+            <h2>Why Choose Wow Foods Catering?</h2>
             <div className="features-grid">
               <div className="feature">
                 <div className="feature-icon">🎉</div>

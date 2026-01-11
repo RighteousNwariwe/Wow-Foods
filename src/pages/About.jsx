@@ -6,7 +6,7 @@ const About = () => {
     <div className="about-page">
       <div className="container">
         <div className="page-header">
-          <h1>About Woow Foods</h1>
+          <h1>About Wow Foods</h1>
           <p>Healthy, Affordable, and Delicious Food </p>
         </div>
 
@@ -14,7 +14,7 @@ const About = () => {
           <section className="about-section">
             <h2>Our Story</h2>
             <p>
-              Woow Foods was founded in August 2016 by Noxolisa Ruth Ndyalivani, a highly motivated 
+              Wow Foods was founded in August 2016 by Noxolisa Ruth Ndyalivani, a highly motivated 
               entrepreneur from Khayelitsha, Cape Town. After completing an entrepreneurship course 
               from the University of Stellenbosch (where she graduated as the top entrepreneurship 
               student), Noxolisa identified a gap in the market for healthier, more affordable street 
@@ -35,7 +35,7 @@ const About = () => {
                 <div className="timeline-year">2016</div>
                 <div className="timeline-content">
                   <h3>Launch</h3>
-                  <p>Woow Foods began as a small stall at a train station, selling steamed bread, coffee, and homemade muffins on weekdays.</p>
+                  <p>Wow Foods began as a small stall at a train station, selling steamed bread, coffee, and homemade muffins on weekdays.</p>
                 </div>
               </div>
               <div className="timeline-item">
@@ -113,7 +113,7 @@ const About = () => {
           <section className="about-section">
             <h2>Our Team</h2>
             <p>
-              Woow Foods operates with 8 dedicated employees, comprising 70% females and 30% males. 
+              Wow Foods operates with 8 dedicated employees, comprising 70% females and 30% males. 
               Our team is committed to maintaining high standards of hygiene, food safety, and customer 
               service. We work together to ensure that every meal served meets our quality standards 
               and provides value to our customers.

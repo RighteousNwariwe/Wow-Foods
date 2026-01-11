@@ -1,4 +1,4 @@
-// Product data based on Woow Foods menu
+// Product data based on Wow Foods menu
 export const products = [
   {
     id: 1,
@@ -105,7 +105,7 @@ export const products = [
     category: 'meals',
     price: 18,
     image: 'https://images.unsplash.com/photo-1549931319-a545dcf3bc73?w=400',
-    description: 'Traditional steamed bread - a Woow Foods original!',
+    description: 'Traditional steamed bread - a Wow Foods original!',
     inStock: true
   },
   {

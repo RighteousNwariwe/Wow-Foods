@@ -13,6 +13,7 @@ const Checkout = () => {
     phone: '',
     campus: '',
     address: '',
+    deliveryOption: 'pickup', // 'pickup' or 'delivery'
     specialInstructions: ''
   });
   
@@ -20,7 +21,10 @@ const Checkout = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const subtotal = getCartTotal();
-  const deliveryFee = subtotal > 100 ? 0 : 25;
+  // Delivery fee only applies if delivery is selected AND order is less than R100
+  // Only D6 and Mowbray are delivery locations
+  const isDeliveryLocation = formData.campus === 'd6' || formData.campus === 'mowbray';
+  const deliveryFee = (formData.deliveryOption === 'delivery' && isDeliveryLocation && subtotal < 100) ? 25 : 0;
   const total = subtotal + deliveryFee;
 
   const handleChange = (e) => {
@@ -77,8 +81,14 @@ const Checkout = () => {
       newErrors.campus = 'Please select your campus';
     }
     
-    if (!formData.address.trim()) {
-      newErrors.address = 'Address is required';
+    // Address is required only for delivery
+    if (formData.deliveryOption === 'delivery' && !formData.address.trim()) {
+      newErrors.address = 'Delivery address is required for delivery orders';
+    }
+    
+    // Validate delivery location
+    if (formData.deliveryOption === 'delivery' && !isDeliveryLocation) {
+      newErrors.campus = 'Delivery is only available for D6 and Mowbray campuses';
     }
     
     setErrors(newErrors);
@@ -91,8 +101,6 @@ const Checkout = () => {
     if (!validateForm()) {
       return;
     }
-    
-    setIsSubmitting(true);
     
     setIsSubmitting(true);
     
@@ -184,6 +192,24 @@ const Checkout = () => {
             </div>
             
             <div className="form-group">
+              <label htmlFor="deliveryOption">Order Type *</label>
+              <select
+                id="deliveryOption"
+                name="deliveryOption"
+                value={formData.deliveryOption}
+                onChange={handleChange}
+                className={errors.deliveryOption ? 'error' : ''}
+              >
+                <option value="pickup">Pickup</option>
+                <option value="delivery">Delivery</option>
+              </select>
+              {errors.deliveryOption && <span className="error-message">{errors.deliveryOption}</span>}
+              {formData.deliveryOption === 'delivery' && (
+                <p className="form-hint">Delivery is only available for D6 and Mowbray campuses</p>
+              )}
+            </div>
+
+            <div className="form-group">
               <label htmlFor="campus">CPUT Campus *</label>
               <select
                 id="campus"
@@ -193,27 +219,44 @@ const Checkout = () => {
                 className={errors.campus ? 'error' : ''}
               >
                 <option value="">Select your campus</option>
+                <option value="d6">D6 Campus</option>
+                <option value="mowbray">Mowbray Campus</option>
                 <option value="cape-town">Cape Town Campus</option>
                 <option value="bellville">Bellville Campus</option>
-                <option value="d6">D6 Campus</option>
                 <option value="other">Other Location</option>
               </select>
               {errors.campus && <span className="error-message">{errors.campus}</span>}
             </div>
             
-            <div className="form-group">
-              <label htmlFor="address">Delivery Address *</label>
-              <textarea
-                id="address"
-                name="address"
-                value={formData.address}
-                onChange={handleChange}
-                className={errors.address ? 'error' : ''}
-                placeholder="Building name, room number, or specific location on campus"
-                rows="3"
-              />
-              {errors.address && <span className="error-message">{errors.address}</span>}
-            </div>
+            {formData.deliveryOption === 'delivery' && (
+              <div className="form-group">
+                <label htmlFor="address">Delivery Address *</label>
+                <textarea
+                  id="address"
+                  name="address"
+                  value={formData.address}
+                  onChange={handleChange}
+                  className={errors.address ? 'error' : ''}
+                  placeholder="Building name, room number, or specific location on campus"
+                  rows="3"
+                />
+                {errors.address && <span className="error-message">{errors.address}</span>}
+              </div>
+            )}
+            
+            {formData.deliveryOption === 'pickup' && (
+              <div className="form-group">
+                <label htmlFor="address">Pickup Location (Optional)</label>
+                <textarea
+                  id="address"
+                  name="address"
+                  value={formData.address}
+                  onChange={handleChange}
+                  placeholder="Specific pickup location or instructions (optional)"
+                  rows="3"
+                />
+              </div>
+            )}
             
             <div className="form-group">
               <label htmlFor="specialInstructions">Special Instructions (Optional)</label>
@@ -255,20 +298,24 @@ const Checkout = () => {
                 <span>Subtotal</span>
                 <span>R{subtotal.toFixed(2)}</span>
               </div>
-              <div className="total-row">
-                <span>Delivery Fee</span>
-                <span>
-                  {deliveryFee === 0 ? (
-                    <span className="free-delivery">Free!</span>
-                  ) : (
-                    `R${deliveryFee.toFixed(2)}`
+              {formData.deliveryOption === 'delivery' && (
+                <>
+                  <div className="total-row">
+                    <span>Delivery Fee</span>
+                    <span>
+                      {deliveryFee === 0 ? (
+                        <span className="free-delivery">Free!</span>
+                      ) : (
+                        `R${deliveryFee.toFixed(2)}`
+                      )}
+                    </span>
+                  </div>
+                  {subtotal < 100 && deliveryFee > 0 && (
+                    <div className="delivery-note">
+                      Spend R{(100 - subtotal).toFixed(2)} more for free delivery!
+                    </div>
                   )}
-                </span>
-              </div>
-              {subtotal < 100 && (
-                <div className="delivery-note">
-                  Spend R{(100 - subtotal).toFixed(2)} more for free delivery!
-                </div>
+                </>
               )}
               <div className="total-row final-total">
                 <span>Total</span>

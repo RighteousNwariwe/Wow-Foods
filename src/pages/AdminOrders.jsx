@@ -90,13 +90,13 @@ ${subtotalLine ? subtotalLine + '\n' : ''}${deliveryLine ? deliveryLine + '\n' :
     
     switch (status) {
       case 'verified':
-        message = `✅ ORDER VERIFIED\n\nHello ${order.name},\n\nYour order has been received and payment verified!\n\n${orderSummary}\n\nWe are now preparing your order. You will be notified when it's ready.\n\nThank you for ordering from Woow Foods! 🍽️`;
+        message = `✅ ORDER VERIFIED\n\nHello ${order.name},\n\nYour order has been received and payment verified!\n\n${orderSummary}\n\nWe are now preparing your order. You will be notified when it's ready.\n\nThank you for ordering from Wow Foods! 🍽️`;
         break;
       case 'ready_for_collection':
-        message = `🎉 ORDER READY FOR COLLECTION\n\nHello ${order.name},\n\nYour order is ready for collection!\n\n${orderSummary}\n\nPlease come to collect your order at:\n📍 ${order.campus}\n\nWe look forward to serving you!\n\nThank you, Woow Foods 🍽️`;
+        message = `🎉 ORDER READY FOR COLLECTION\n\nHello ${order.name},\n\nYour order is ready for collection!\n\n${orderSummary}\n\nPlease come to collect your order at:\n📍 ${order.campus}\n\nWe look forward to serving you!\n\nThank you, Wow Foods 🍽️`;
         break;
       case 'out_for_delivery':
-        message = `🚚 ORDER OUT FOR DELIVERY\n\nHello ${order.name},\n\nGreat news! Your order is out for delivery.\n\n${orderSummary}\n\nDelivery Address: ${order.address}\n\nOur delivery person will be arriving shortly. Please ensure someone is available to receive the order.\n\nThank you, Woow Foods 🍽️`;
+        message = `🚚 ORDER OUT FOR DELIVERY\n\nHello ${order.name},\n\nGreat news! Your order is out for delivery.\n\n${orderSummary}\n\nDelivery Address: ${order.address}\n\nOur delivery person will be arriving shortly. Please ensure someone is available to receive the order.\n\nThank you, Wow Foods 🍽️`;
         break;
       default:
         return;
@@ -113,24 +113,29 @@ ${subtotalLine ? subtotalLine + '\n' : ''}${deliveryLine ? deliveryLine + '\n' :
         cleanNumber = '27' + cleanNumber.substring(1);
       } else if (cleanNumber.startsWith('27')) {
         // Already in correct format (27XXXXXXXXX)
-      } else if (!cleanNumber.startsWith('27')) {
+      } else {
         // Add 27 prefix if not present
         cleanNumber = '27' + cleanNumber;
       }
       
       // Ensure it's 11 digits (27 + 9 digits)
-      if (cleanNumber.length === 11) {
+      if (cleanNumber.length === 11 && /^27\d{9}$/.test(cleanNumber)) {
         const whatsappUrl = `https://wa.me/${cleanNumber}?text=${encodeURIComponent(message)}`;
-        window.open(whatsappUrl, '_blank');
+        // Use window.open with _blank for better compatibility
+        const whatsappWindow = window.open(whatsappUrl, '_blank');
+        if (!whatsappWindow) {
+          // If popup blocked, try direct navigation
+          window.location.href = whatsappUrl;
+        }
       } else {
-        console.warn('Invalid phone number format:', order.phone);
-        alert(`Could not send WhatsApp notification. Invalid phone number format: ${order.phone}`);
+        console.warn('Invalid phone number format:', order.phone, 'Cleaned:', cleanNumber);
+        alert(`Could not send WhatsApp notification. Invalid phone number format: ${order.phone}\nPlease verify the phone number is correct.`);
       }
     }
 
     // Send via Email
     if (order.email) {
-      const emailSubject = encodeURIComponent(`Order #${order.id} Update - Woow Foods`);
+      const emailSubject = encodeURIComponent(`Order #${order.id} Update - Wow Foods`);
       const emailBody = encodeURIComponent(message);
       const emailUrl = `mailto:${order.email}?subject=${emailSubject}&body=${emailBody}`;
       
@@ -147,29 +152,42 @@ ${subtotalLine ? subtotalLine + '\n' : ''}${deliveryLine ? deliveryLine + '\n' :
     navigate('/admin/login');
   };
 
-  const handleStatusChange = (orderId, newStatus) => {
+  const handleStatusChange = async (orderId, newStatus) => {
     // Get the order before updating
     const order = orders.find(o => o.id === orderId);
     
-    if (!order) return;
+    if (!order) {
+      console.error('Order not found:', orderId);
+      return;
+    }
 
     let verified = null;
     if (newStatus === 'verified') {
       verified = true;
     }
     
-    // Update via context (which updates Firebase)
-    updateOrderStatus(orderId, newStatus, verified);
-    
-    // Send notification for specific statuses
-    if (newStatus === 'verified' || newStatus === 'ready_for_collection' || newStatus === 'out_for_delivery') {
-      // Update order status in the local order object
-      const updatedOrder = { ...order, status: newStatus };
-      if (verified) {
-        updatedOrder.verified = true;
-        updatedOrder.verifiedAt = new Date().toISOString();
+    try {
+      // Update via context (which updates Firebase)
+      await updateOrderStatus(orderId, newStatus, verified);
+      
+      // Create updated order object for notification
+      const updatedOrder = { 
+        ...order, 
+        status: newStatus,
+        verified: verified !== null ? verified : order.verified,
+        verifiedAt: verified ? new Date().toISOString() : order.verifiedAt
+      };
+      
+      // Send notification for specific statuses
+      if (newStatus === 'verified' || newStatus === 'ready_for_collection' || newStatus === 'out_for_delivery') {
+        // Small delay to ensure Firebase update is processed
+        setTimeout(() => {
+          sendNotification(updatedOrder, newStatus);
+        }, 500);
       }
-      sendNotification(updatedOrder, newStatus);
+    } catch (error) {
+      console.error('Error updating order status:', error);
+      alert('Failed to update order status. Please try again.');
     }
     
     // Orders will be updated automatically via real-time listener
@@ -425,9 +443,9 @@ ${subtotalLine ? subtotalLine + '\n' : ''}${deliveryLine ? deliveryLine + '\n' :
             <div className="modal-footer">
               <button
                 className="btn btn-primary"
-                onClick={() => {
+                onClick={async () => {
                   if (selectedOrder.status !== 'verified') {
-                    handleStatusChange(selectedOrder.id, 'verified');
+                    await handleStatusChange(selectedOrder.id, 'verified');
                     // Notification will be sent by handleStatusChange
                   }
                   setShowProofModal(false);

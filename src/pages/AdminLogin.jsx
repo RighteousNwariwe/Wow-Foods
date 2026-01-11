@@ -53,7 +53,7 @@ const AdminLogin = () => {
         <div className="login-card">
           <div className="login-header">
             <h1>🔐 Admin Login</h1>
-            <p>Woow Foods Admin Portal</p>
+            <p>Wow Foods Admin Portal</p>
           </div>
 
           <form className="login-form" onSubmit={handleSubmit}>

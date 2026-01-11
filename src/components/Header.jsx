@@ -14,9 +14,9 @@ const Header = () => {
     <header className="header">
       <div className="header-container">
         <Link to="/" className="logo">
-          <img src="/logo.jpeg" alt="Woow Foods Logo" className="logo-image" />
+          <img src="/logo.jpeg" alt="Wow Foods Logo" className="logo-image" />
           <div className="logo-text">
-            <h1>Woow Foods</h1>
+            <h1>Wow Foods</h1>
             <p>Healthy & Affordable Food</p>
           </div>
         </Link>

@@ -109,6 +109,7 @@ export const CartProvider = ({ children }) => {
       items: [...cartItems],
       subtotal: orderData.subtotal !== undefined ? orderData.subtotal : getCartTotal(),
       deliveryFee: orderData.deliveryFee !== undefined ? orderData.deliveryFee : 0,
+      deliveryOption: orderData.deliveryOption || 'pickup', // Store delivery option
       total: orderTotal,
       ...orderData,
       date: new Date().toISOString(),
@@ -121,7 +122,7 @@ export const CartProvider = ({ children }) => {
     const saved = await saveOrderToFirebase(order);
     if (!saved) {
       console.error('Failed to save order to Firebase');
-      // Still return order for local use, but show error
+      throw new Error('Failed to save order. Please try again.');
     }
     
     // Update local state (will be synced via real-time listener)
