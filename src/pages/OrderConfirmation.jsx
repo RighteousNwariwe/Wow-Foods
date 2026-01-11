@@ -222,6 +222,12 @@ Status: ${order.status.toUpperCase()}`;
                 <span className="detail-label">Order Number:</span>
                 <span className="detail-value">#{order.id}</span>
               </div>
+              <div className="detail-row">
+                <span className="detail-label">Order Type:</span>
+                <span className="detail-value">
+                  {order.deliveryOption === 'delivery' ? '🚚 Delivery' : '📦 Pickup'}
+                </span>
+              </div>
               
               <div className="detail-row">
                 <span className="detail-label">Order Date:</span>

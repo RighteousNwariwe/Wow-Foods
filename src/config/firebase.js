@@ -16,8 +16,16 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
-const database = getDatabase(app);
+let app, analytics, database;
+
+try {
+  app = initializeApp(firebaseConfig);
+  analytics = getAnalytics(app);
+  database = getDatabase(app);
+  console.log('Firebase initialized successfully');
+} catch (error) {
+  console.error('Error initializing Firebase:', error);
+  throw error;
+}
 
 export { app, analytics, database };

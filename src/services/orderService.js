@@ -4,16 +4,27 @@ import { database } from '../config/firebase';
 // Save order to Firebase
 export const saveOrderToFirebase = async (order) => {
   try {
+    if (!database) {
+      console.error('Firebase database not initialized');
+      throw new Error('Database not initialized');
+    }
+    
     const orderRef = ref(database, `orders/${order.id}`);
     await set(orderRef, {
       ...order,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     });
+    console.log('Order saved successfully to Firebase:', order.id);
     return true;
   } catch (error) {
     console.error('Error saving order to Firebase:', error);
-    return false;
+    console.error('Error details:', {
+      message: error.message,
+      code: error.code,
+      orderId: order?.id
+    });
+    throw error; // Re-throw to let caller handle it
   }
 };
 
@@ -35,19 +46,34 @@ export const getOrderById = async (orderId) => {
 // Get all orders
 export const getAllOrders = async () => {
   try {
+    if (!database) {
+      console.error('Firebase database not initialized');
+      return [];
+    }
+    
     const ordersRef = ref(database, 'orders');
     const snapshot = await get(ordersRef);
     if (snapshot.exists()) {
       const orders = snapshot.val();
       return Object.values(orders).sort((a, b) => {
-        const dateA = new Date(a.date || a.createdAt || 0);
-        const dateB = new Date(b.date || b.createdAt || 0);
-        return dateB - dateA;
+        try {
+          const dateA = new Date(a.date || a.createdAt || 0);
+          const dateB = new Date(b.date || b.createdAt || 0);
+          return dateB - dateA;
+        } catch (e) {
+          console.warn('Error sorting orders by date:', e);
+          return 0;
+        }
       });
     }
     return [];
   } catch (error) {
     console.error('Error getting orders from Firebase:', error);
+    console.error('Error details:', {
+      message: error.message,
+      code: error.code
+    });
+    // Return empty array on error so order can still be placed
     return [];
   }
 };

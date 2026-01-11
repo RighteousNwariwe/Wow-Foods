@@ -117,7 +117,23 @@ const Checkout = () => {
     } catch (error) {
       console.error('Error placing order:', error);
       setIsSubmitting(false);
-      alert('There was an error placing your order. Please try again.');
+      
+      // More detailed error message
+      let errorMessage = 'There was an error placing your order. ';
+      if (error.message) {
+        errorMessage += error.message;
+      } else if (error.code) {
+        errorMessage += `Error code: ${error.code}. `;
+        if (error.code === 'PERMISSION_DENIED') {
+          errorMessage += 'Please check Firebase database permissions.';
+        } else if (error.code === 'UNAVAILABLE') {
+          errorMessage += 'Database is temporarily unavailable. Please check your internet connection and try again.';
+        }
+      } else {
+        errorMessage += 'Please check your internet connection and try again.';
+      }
+      
+      alert(errorMessage);
     }
   };
 
