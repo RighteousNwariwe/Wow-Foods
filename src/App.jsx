@@ -12,6 +12,7 @@ import Catering from './pages/Catering';
 import About from './pages/About';
 import AdminOrders from './pages/AdminOrders';
 import AdminLogin from './pages/AdminLogin';
+import TrackOrder from './pages/TrackOrder';
 import ProtectedRoute from './components/ProtectedRoute';
 import './App.css';
 
@@ -28,6 +29,7 @@ function App() {
               <Route path="/cart" element={<Cart />} />
               <Route path="/checkout" element={<Checkout />} />
               <Route path="/order-confirmation" element={<OrderConfirmation />} />
+              <Route path="/track-order" element={<TrackOrder />} />
               <Route path="/catering" element={<Catering />} />
               <Route path="/about" element={<About />} />
               <Route path="/admin/login" element={<AdminLogin />} />

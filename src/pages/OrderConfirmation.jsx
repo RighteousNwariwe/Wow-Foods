@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { updateOrderProof } from '../services/orderService';
 import './OrderConfirmation.css';
 
 const OrderConfirmation = () => {
@@ -170,20 +171,8 @@ Status: ${order.status.toUpperCase()}`;
       // Format order summary
       const orderSummary = formatOrderSummary();
       
-      // Store proof of payment in localStorage for reference
-      const orderWithProof = {
-        ...order,
-        proofOfPayment: proofPreview,
-        proofSubmitted: true,
-        proofSubmittedAt: new Date().toISOString()
-      };
-      
-      // Update localStorage
-      const storedOrders = JSON.parse(localStorage.getItem('woowFoodsOrders') || '[]');
-      const updatedOrders = storedOrders.map(o => 
-        o.id === order.id ? orderWithProof : o
-      );
-      localStorage.setItem('woowFoodsOrders', JSON.stringify(updatedOrders));
+      // Save proof to Firebase
+      await updateOrderProof(order.id, proofPreview);
       
       // Open WhatsApp with order summary
       const whatsappNumber = '0680022727';
@@ -450,7 +439,13 @@ Status: ${order.status.toUpperCase()}`;
           </div>
           
           <div className="action-buttons">
-            <Link to="/products" className="btn btn-primary">
+            <Link 
+              to={`/track-order?orderId=${order.id}&email=${encodeURIComponent(order.email)}`} 
+              className="btn btn-primary"
+            >
+              📦 Track Your Order
+            </Link>
+            <Link to="/products" className="btn btn-secondary">
               Continue Shopping
             </Link>
             <Link to="/" className="btn btn-secondary">

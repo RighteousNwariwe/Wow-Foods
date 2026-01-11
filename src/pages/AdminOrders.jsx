@@ -21,41 +21,29 @@ const AdminOrders = () => {
     delivered: 0
   });
 
-  // Get all orders from localStorage
-  const getAllOrders = () => {
-    try {
-      return JSON.parse(localStorage.getItem('woowFoodsOrders') || '[]');
-    } catch {
-      return [];
-    }
-  };
-
-  // Load and sync orders from localStorage to ensure we have the latest data
+  // Load and sync orders from Firebase (via context which uses real-time listener)
   useEffect(() => {
-    const storedOrders = getAllOrders();
-    // Sort orders by date (newest first)
-    const sortedOrders = [...storedOrders].sort((a, b) => {
-      const dateA = new Date(a.date || 0);
-      const dateB = new Date(b.date || 0);
-      return dateB - dateA;
-    });
-    
-    // Update counts
-    setOrderCounts({
-      all: sortedOrders.length,
-      pending: sortedOrders.filter(o => o.status === 'pending').length,
-      verified: sortedOrders.filter(o => o.status === 'verified').length,
-      in_preparation: sortedOrders.filter(o => o.status === 'in_preparation').length,
-      ready_for_collection: sortedOrders.filter(o => o.status === 'ready_for_collection').length,
-      out_for_delivery: sortedOrders.filter(o => o.status === 'out_for_delivery').length,
-      delivered: sortedOrders.filter(o => o.status === 'delivered').length
-    });
-    
-    // Update filtered orders
-    if (statusFilter === 'all') {
-      setFilteredOrders(sortedOrders);
-    } else {
-      setFilteredOrders(sortedOrders.filter(order => order.status === statusFilter));
+    if (orders && orders.length >= 0) {
+      // Orders are already sorted by date (newest first) from Firebase
+      const sortedOrders = [...orders];
+      
+      // Update counts
+      setOrderCounts({
+        all: sortedOrders.length,
+        pending: sortedOrders.filter(o => o.status === 'pending').length,
+        verified: sortedOrders.filter(o => o.status === 'verified').length,
+        in_preparation: sortedOrders.filter(o => o.status === 'in_preparation').length,
+        ready_for_collection: sortedOrders.filter(o => o.status === 'ready_for_collection').length,
+        out_for_delivery: sortedOrders.filter(o => o.status === 'out_for_delivery').length,
+        delivered: sortedOrders.filter(o => o.status === 'delivered').length
+      });
+      
+      // Update filtered orders
+      if (statusFilter === 'all') {
+        setFilteredOrders(sortedOrders);
+      } else {
+        setFilteredOrders(sortedOrders.filter(order => order.status === statusFilter));
+      }
     }
   }, [statusFilter, orders]);
 
@@ -161,8 +149,7 @@ ${subtotalLine ? subtotalLine + '\n' : ''}${deliveryLine ? deliveryLine + '\n' :
 
   const handleStatusChange = (orderId, newStatus) => {
     // Get the order before updating
-    const storedOrders = getAllOrders();
-    const order = storedOrders.find(o => o.id === orderId);
+    const order = orders.find(o => o.id === orderId);
     
     if (!order) return;
 
@@ -171,7 +158,7 @@ ${subtotalLine ? subtotalLine + '\n' : ''}${deliveryLine ? deliveryLine + '\n' :
       verified = true;
     }
     
-    // Update via context (which also updates localStorage)
+    // Update via context (which updates Firebase)
     updateOrderStatus(orderId, newStatus, verified);
     
     // Send notification for specific statuses
@@ -185,31 +172,7 @@ ${subtotalLine ? subtotalLine + '\n' : ''}${deliveryLine ? deliveryLine + '\n' :
       sendNotification(updatedOrder, newStatus);
     }
     
-    // Force refresh by updating filtered orders
-    setTimeout(() => {
-      const updatedStoredOrders = getAllOrders();
-      const sortedOrders = [...updatedStoredOrders].sort((a, b) => {
-        const dateA = new Date(a.date || 0);
-        const dateB = new Date(b.date || 0);
-        return dateB - dateA;
-      });
-      
-      setOrderCounts({
-        all: sortedOrders.length,
-        pending: sortedOrders.filter(o => o.status === 'pending').length,
-        verified: sortedOrders.filter(o => o.status === 'verified').length,
-        in_preparation: sortedOrders.filter(o => o.status === 'in_preparation').length,
-        ready_for_collection: sortedOrders.filter(o => o.status === 'ready_for_collection').length,
-        out_for_delivery: sortedOrders.filter(o => o.status === 'out_for_delivery').length,
-        delivered: sortedOrders.filter(o => o.status === 'delivered').length
-      });
-      
-      if (statusFilter === 'all') {
-        setFilteredOrders(sortedOrders);
-      } else {
-        setFilteredOrders(sortedOrders.filter(order => order.status === statusFilter));
-      }
-    }, 100);
+    // Orders will be updated automatically via real-time listener
   };
 
   const handleViewProof = (order) => {

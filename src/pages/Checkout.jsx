@@ -94,9 +94,11 @@ const Checkout = () => {
     
     setIsSubmitting(true);
     
-    // Simulate API call
-    setTimeout(() => {
-      const order = placeOrder({
+    setIsSubmitting(true);
+    
+    // Place order (now async with Firebase)
+    try {
+      const order = await placeOrder({
         ...formData,
         subtotal: subtotal,
         deliveryFee: deliveryFee,
@@ -104,7 +106,11 @@ const Checkout = () => {
       });
       setIsSubmitting(false);
       navigate('/order-confirmation', { state: { order } });
-    }, 1500);
+    } catch (error) {
+      console.error('Error placing order:', error);
+      setIsSubmitting(false);
+      alert('There was an error placing your order. Please try again.');
+    }
   };
 
   if (cartItems.length === 0) {

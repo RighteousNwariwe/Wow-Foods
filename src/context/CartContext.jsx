@@ -1,4 +1,5 @@
-import React, { createContext, useState, useContext } from 'react';
+import React, { createContext, useState, useContext, useEffect } from 'react';
+import { saveOrderToFirebase, getAllOrders, updateOrderStatus as updateOrderStatusFirebase, subscribeToAllOrders } from '../services/orderService';
 
 const CartContext = createContext();
 
@@ -12,16 +13,21 @@ export const useCart = () => {
 
 export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState([]);
-  // Initialize orders from localStorage if available
-  const [orders, setOrders] = useState(() => {
-    try {
-      const storedOrders = localStorage.getItem('woowFoodsOrders');
-      return storedOrders ? JSON.parse(storedOrders) : [];
-    } catch (error) {
-      console.error('Error loading orders from localStorage:', error);
-      return [];
-    }
-  });
+  const [orders, setOrders] = useState([]);
+  const [isLoadingOrders, setIsLoadingOrders] = useState(true);
+
+  // Subscribe to real-time orders updates
+  useEffect(() => {
+    setIsLoadingOrders(true);
+    const unsubscribe = subscribeToAllOrders((ordersData) => {
+      setOrders(ordersData);
+      setIsLoadingOrders(false);
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, []);
 
   const addToCart = (product, quantity = 1) => {
     setCartItems(prevItems => {
@@ -68,18 +74,18 @@ export const CartProvider = ({ children }) => {
     return cartItems.reduce((count, item) => count + item.quantity, 0);
   };
 
-  const generateOrderNumber = () => {
+  const generateOrderNumber = async () => {
     // Get today's date in YYYY-MM-DD format
     const today = new Date();
     const todayStr = today.toISOString().split('T')[0];
     
-    // Get existing orders from localStorage
-    const storedOrders = JSON.parse(localStorage.getItem('woowFoodsOrders') || '[]');
+    // Get existing orders from Firebase
+    const allOrders = await getAllOrders();
     
     // Filter orders from today only
-    const todayOrders = storedOrders.filter(order => {
-      if (!order.date) return false;
-      const orderDate = new Date(order.date).toISOString().split('T')[0];
+    const todayOrders = allOrders.filter(order => {
+      if (!order.date && !order.createdAt) return false;
+      const orderDate = new Date(order.date || order.createdAt).toISOString().split('T')[0];
       return orderDate === todayStr;
     });
     
@@ -92,9 +98,9 @@ export const CartProvider = ({ children }) => {
     return `${dateStr}-${String(orderNumber).padStart(3, '0')}`;
   };
 
-  const placeOrder = (orderData) => {
+  const placeOrder = async (orderData) => {
     // Generate order number BEFORE creating the order to ensure correct incrementing
-    const orderId = generateOrderNumber();
+    const orderId = await generateOrderNumber();
     
     // Use total from orderData if provided (includes delivery fee), otherwise use cart total
     const orderTotal = orderData.total !== undefined ? orderData.total : getCartTotal();
@@ -111,36 +117,25 @@ export const CartProvider = ({ children }) => {
       verifiedAt: null
     };
     
-    // Update both state and localStorage atomically
-    setOrders(prevOrders => {
-      const updatedOrders = [order, ...prevOrders];
-      localStorage.setItem('woowFoodsOrders', JSON.stringify(updatedOrders));
-      return updatedOrders;
-    });
+    // Save to Firebase
+    const saved = await saveOrderToFirebase(order);
+    if (!saved) {
+      console.error('Failed to save order to Firebase');
+      // Still return order for local use, but show error
+    }
+    
+    // Update local state (will be synced via real-time listener)
+    setOrders(prevOrders => [order, ...prevOrders]);
     
     clearCart();
     return order;
   };
 
-  const updateOrderStatus = (orderId, status, verified = null) => {
-    setOrders(prevOrders => {
-      const updatedOrders = prevOrders.map(order => {
-        if (order.id === orderId) {
-          const updated = {
-            ...order,
-            status,
-            ...(verified !== null && {
-              verified,
-              verifiedAt: verified ? new Date().toISOString() : null
-            })
-          };
-          return updated;
-        }
-        return order;
-      });
-      localStorage.setItem('woowFoodsOrders', JSON.stringify(updatedOrders));
-      return updatedOrders;
-    });
+  const updateOrderStatus = async (orderId, status, verified = null) => {
+    // Update in Firebase
+    await updateOrderStatusFirebase(orderId, status, verified);
+    
+    // Local state will be updated via real-time listener
   };
 
   const value = {
@@ -153,7 +148,8 @@ export const CartProvider = ({ children }) => {
     getCartItemCount,
     placeOrder,
     orders,
-    updateOrderStatus
+    updateOrderStatus,
+    isLoadingOrders
   };
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
