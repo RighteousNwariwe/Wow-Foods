@@ -37,9 +37,12 @@
 }
 
 .cart-content {
-  display: grid;
-  grid-template-columns: 1fr 400px;
-  gap: 2rem;
+  display: block;
+}
+
+.cart-items-full {
+  max-width: 900px;
+  margin: 0 auto;
 }
 
 .cart-items {

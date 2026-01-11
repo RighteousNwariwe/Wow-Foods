@@ -26,9 +26,33 @@ const Catering = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Here you would typically send the data to a backend API
+    
+    // Format the catering request email
+    const emailSubject = encodeURIComponent(`Catering Request from ${formData.name}`);
+    const emailBody = encodeURIComponent(
+      `NEW CATERING REQUEST\n\n` +
+      `Contact Information:\n` +
+      `Name: ${formData.name}\n` +
+      `Email: ${formData.email}\n` +
+      `Phone: ${formData.phone}\n` +
+      `Organization: ${formData.organization || 'N/A'}\n\n` +
+      `Event Details:\n` +
+      `Event Type: ${formData.eventType}\n` +
+      `Event Date: ${formData.eventDate}\n` +
+      `Number of Guests: ${formData.numberOfGuests}\n` +
+      `Location: ${formData.location}\n\n` +
+      `Special Requirements:\n${formData.specialRequirements || 'None'}\n\n` +
+      `---\n` +
+      `This catering request was submitted through the Wow Foods website.`
+    );
+    
+    // Open email client with pre-filled information
+    const mailtoLink = `mailto:righteousonyedi@gmail.com?subject=${emailSubject}&body=${emailBody}`;
+    window.location.href = mailtoLink;
+    
     console.log('Catering request submitted:', formData);
     setSubmitted(true);
+    
     setTimeout(() => {
       setSubmitted(false);
       setFormData({

@@ -34,55 +34,30 @@ const Cart = () => {
         <h1>Shopping Cart</h1>
         
         <div className="cart-content">
-          <div className="cart-items">
+          <div className="cart-items-full">
             {cartItems.map(item => (
               <CartItem key={item.id} item={item} />
             ))}
-          </div>
-
-          <div className="cart-summary">
-            <h2>Order Summary</h2>
-            <div className="summary-row">
-              <span>Subtotal</span>
-              <span>R{subtotal.toFixed(2)}</span>
-            </div>
-            <div className="summary-row">
-              <span>Delivery Fee</span>
-              <span>
-                {deliveryFee === 0 ? (
-                  <span className="free-delivery">Free!</span>
-                ) : (
-                  `R${deliveryFee.toFixed(2)}`
-                )}
-              </span>
-            </div>
-            {subtotal < 100 && (
-              <div className="delivery-note">
-                <p>Spend R{(100 - subtotal).toFixed(2)} more for free delivery!</p>
-              </div>
-            )}
-            <div className="summary-row total">
-              <span>Total</span>
-              <span>R{total.toFixed(2)}</span>
-            </div>
             
-            <button
-              className="btn btn-primary checkout-btn"
-              onClick={() => navigate('/checkout')}
-            >
-              Proceed to Checkout
-            </button>
-            
-            <button
-              className="btn btn-secondary clear-btn"
-              onClick={clearCart}
-            >
-              Clear Cart
-            </button>
-            
-            <Link to="/products" className="continue-shopping">
-              Continue Shopping
-            </Link>
+            <div className="cart-actions">
+              <button
+                className="btn btn-primary checkout-btn"
+                onClick={() => navigate('/checkout')}
+              >
+                Proceed to Checkout
+              </button>
+              
+              <button
+                className="btn btn-secondary clear-btn"
+                onClick={clearCart}
+              >
+                Clear Cart
+              </button>
+              
+              <Link to="/products" className="continue-shopping">
+                Continue Shopping
+              </Link>
+            </div>
           </div>
         </div>
       </div>
