@@ -1,37 +1,31 @@
 import { useEffect, useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const ProtectedRoute = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(null);
+  const { currentUser } = useAuth();
   const location = useLocation();
 
-  useEffect(() => {
-    // Check if admin is authenticated
-    const checkAuth = () => {
-      const authenticated = localStorage.getItem('adminAuthenticated') === 'true';
-      setIsAuthenticated(authenticated);
-    };
-
-    checkAuth();
-  }, []);
+  // Check if user is authenticated and is admin
+  const isAuthenticated = currentUser && currentUser.email === 'wowfoods@gmail.com';
 
   // Show loading state while checking authentication
-  if (isAuthenticated === null) {
+  if (currentUser === null) {
     return (
-      <div style={{ 
-        minHeight: '100vh', 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center' 
+      <div style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
       }}>
         <div>Loading...</div>
       </div>
     );
   }
 
-  // Redirect to login if not authenticated
+  // Redirect to login if not authenticated or not admin
   if (!isAuthenticated) {
-    return <Navigate to="/admin/login" state={{ from: location }} replace />;
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   return children;

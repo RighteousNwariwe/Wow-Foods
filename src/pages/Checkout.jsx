@@ -1,12 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
+import { doc, getDoc } from 'firebase/firestore';
+import { firestore } from '../config/firebase';
 import './Checkout.css';
 
 const Checkout = () => {
   const { cartItems, getCartTotal, placeOrder } = useCart();
+  const { currentUser } = useAuth();
   const navigate = useNavigate();
-  
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -16,9 +20,58 @@ const Checkout = () => {
     deliveryOption: 'pickup', // 'pickup' or 'delivery'
     specialInstructions: ''
   });
-  
+
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loadingUserData, setLoadingUserData] = useState(true);
+
+  // Check if user is logged in and load their data
+  useEffect(() => {
+    if (!currentUser) {
+      // Redirect to login with return URL
+      navigate('/login', {
+        state: { from: '/checkout' },
+        replace: true
+      });
+      return;
+    }
+
+    // Load user data from Firestore
+    const loadUserData = async () => {
+      try {
+        const userDoc = await getDoc(doc(firestore, 'users', currentUser.uid));
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          setFormData(prev => ({
+            ...prev,
+            name: userData.displayName || '',
+            email: currentUser.email || '',
+            phone: userData.phoneNumber || '',
+            address: userData.location || ''
+          }));
+        } else {
+          // Fallback to basic user data
+          setFormData(prev => ({
+            ...prev,
+            email: currentUser.email || '',
+            name: currentUser.displayName || ''
+          }));
+        }
+      } catch (error) {
+        console.error('Error loading user data:', error);
+        // Fallback to basic user data
+        setFormData(prev => ({
+          ...prev,
+          email: currentUser.email || '',
+          name: currentUser.displayName || ''
+        }));
+      } finally {
+        setLoadingUserData(false);
+      }
+    };
+
+    loadUserData();
+  }, [currentUser, navigate]);
 
   const subtotal = getCartTotal();
   // Delivery fee only applies if delivery is selected AND order is less than R100
@@ -44,11 +97,11 @@ const Checkout = () => {
 
   const validateForm = () => {
     const newErrors = {};
-    
+
     if (!formData.name.trim()) {
       newErrors.name = 'Name is required';
     }
-    
+
     if (!formData.email.trim()) {
       newErrors.email = 'Email is required';
     } else {
@@ -64,7 +117,7 @@ const Checkout = () => {
         }
       }
     }
-    
+
     if (!formData.phone.trim()) {
       newErrors.phone = 'Phone number is required';
     } else {
@@ -76,48 +129,53 @@ const Checkout = () => {
         newErrors.phone = 'Please enter a valid South African phone number (e.g., +27 12 345 6789 or 012 345 6789)';
       }
     }
-    
+
     if (!formData.campus) {
       newErrors.campus = 'Please select your campus';
     }
-    
+
     // Address is required only for delivery
     if (formData.deliveryOption === 'delivery' && !formData.address.trim()) {
       newErrors.address = 'Delivery address is required for delivery orders';
     }
-    
+
     // Validate delivery location
     if (formData.deliveryOption === 'delivery' && !isDeliveryLocation) {
       newErrors.campus = 'Delivery is only available for D6 and Mowbray campuses';
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
-    
+
     setIsSubmitting(true);
-    
-    // Place order (now async with Firebase)
+
+    // Place order directly (old payment system)
     try {
       const order = await placeOrder({
         ...formData,
+        userId: currentUser.uid,
+        userEmail: currentUser.email,
         subtotal: subtotal,
         deliveryFee: deliveryFee,
-        total: total
+        total: total,
+        status: 'confirmed' // Direct confirmation
       });
+
       setIsSubmitting(false);
+      // Redirect to order confirmation directly
       navigate('/order-confirmation', { state: { order } });
     } catch (error) {
       console.error('Error placing order:', error);
       setIsSubmitting(false);
-      
+
       // More detailed error message
       let errorMessage = 'There was an error placing your order. ';
       if (error.message) {
@@ -132,7 +190,7 @@ const Checkout = () => {
       } else {
         errorMessage += 'Please check your internet connection and try again.';
       }
-      
+
       alert(errorMessage);
     }
   };
@@ -156,15 +214,27 @@ const Checkout = () => {
     );
   }
 
+  if (loadingUserData) {
+    return (
+      <div className="checkout-page">
+        <div className="container">
+          <div className="loading">
+            <h1>Loading your information...</h1>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="checkout-page">
       <div className="container">
         <h1>Checkout</h1>
-        
+
         <div className="checkout-content">
           <form className="checkout-form" onSubmit={handleSubmit}>
             <h2>Delivery Information</h2>
-            
+
             <div className="form-group">
               <label htmlFor="name">Full Name *</label>
               <input
@@ -175,10 +245,11 @@ const Checkout = () => {
                 onChange={handleChange}
                 className={errors.name ? 'error' : ''}
                 placeholder="Enter your full name"
+                required
               />
               {errors.name && <span className="error-message">{errors.name}</span>}
             </div>
-            
+
             <div className="form-group">
               <label htmlFor="email">Email *</label>
               <input
@@ -189,10 +260,13 @@ const Checkout = () => {
                 onChange={handleChange}
                 className={errors.email ? 'error' : ''}
                 placeholder="your.email@example.com"
+                required
+                disabled // Email is disabled as it comes from authenticated user
               />
               {errors.email && <span className="error-message">{errors.email}</span>}
+              <small className="form-hint">Email cannot be changed. Contact support if needed.</small>
             </div>
-            
+
             <div className="form-group">
               <label htmlFor="phone">Phone Number *</label>
               <input
@@ -203,10 +277,11 @@ const Checkout = () => {
                 onChange={handleChange}
                 className={errors.phone ? 'error' : ''}
                 placeholder="+27 12 345 6789"
+                required
               />
               {errors.phone && <span className="error-message">{errors.phone}</span>}
             </div>
-            
+
             <div className="form-group">
               <label htmlFor="deliveryOption">Order Type *</label>
               <select
@@ -215,6 +290,7 @@ const Checkout = () => {
                 value={formData.deliveryOption}
                 onChange={handleChange}
                 className={errors.deliveryOption ? 'error' : ''}
+                required
               >
                 <option value="pickup">Pickup</option>
                 <option value="delivery">Delivery</option>
@@ -233,33 +309,32 @@ const Checkout = () => {
                 value={formData.campus}
                 onChange={handleChange}
                 className={errors.campus ? 'error' : ''}
+                required
               >
                 <option value="">Select your campus</option>
                 <option value="d6">D6 Campus</option>
                 <option value="mowbray">Mowbray Campus</option>
-                <option value="cape-town">Cape Town Campus</option>
-                <option value="bellville">Bellville Campus</option>
-                <option value="other">Other Location</option>
               </select>
               {errors.campus && <span className="error-message">{errors.campus}</span>}
             </div>
-            
+
             {formData.deliveryOption === 'delivery' && (
               <div className="form-group">
-                <label htmlFor="address">Delivery Address *</label>
+                <label htmlFor="address">Delivery Location *</label>
                 <textarea
                   id="address"
                   name="address"
                   value={formData.address}
                   onChange={handleChange}
                   className={errors.address ? 'error' : ''}
-                  placeholder="Building name, room number, or specific location on campus"
+                  placeholder="School building or block (e.g., Engineering Block, Room 201)"
                   rows="3"
+                  required
                 />
                 {errors.address && <span className="error-message">{errors.address}</span>}
               </div>
             )}
-            
+
             {formData.deliveryOption === 'pickup' && (
               <div className="form-group">
                 <label htmlFor="address">Pickup Location (Optional)</label>
@@ -273,7 +348,7 @@ const Checkout = () => {
                 />
               </div>
             )}
-            
+
             <div className="form-group">
               <label htmlFor="specialInstructions">Special Instructions (Optional)</label>
               <textarea
@@ -285,7 +360,7 @@ const Checkout = () => {
                 rows="3"
               />
             </div>
-            
+
             <button
               type="submit"
               className="btn btn-primary submit-btn"
@@ -294,7 +369,7 @@ const Checkout = () => {
               {isSubmitting ? 'Placing Order...' : `Place Order - R${total.toFixed(2)}`}
             </button>
           </form>
-          
+
           <div className="order-summary">
             <h2>Order Summary</h2>
             <div className="order-items">
@@ -308,7 +383,7 @@ const Checkout = () => {
                 </div>
               ))}
             </div>
-            
+
             <div className="order-totals">
               <div className="total-row">
                 <span>Subtotal</span>

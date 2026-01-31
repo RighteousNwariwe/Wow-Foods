@@ -2,6 +2,9 @@
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import { getDatabase } from "firebase/database";
+import { getAuth } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -16,16 +19,19 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-let app, analytics, database;
+let app, analytics, database, auth, firestore, storage;
 
 try {
   app = initializeApp(firebaseConfig);
   analytics = getAnalytics(app);
   database = getDatabase(app);
+  auth = getAuth(app);
+  firestore = getFirestore(app);
+  storage = getStorage(app);
   console.log('Firebase initialized successfully');
 } catch (error) {
   console.error('Error initializing Firebase:', error);
   throw error;
 }
 
-export { app, analytics, database };
+export { app, analytics, database, auth, firestore, storage };

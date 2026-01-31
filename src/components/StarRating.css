@@ -1,0 +1,71 @@
+.star-rating {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.stars {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.star {
+  font-size: 1.2rem;
+  color: #ddd;
+  cursor: pointer;
+  transition: color 0.2s ease, transform 0.2s ease;
+  user-select: none;
+}
+
+.star.filled {
+  color: #FFD700;
+}
+
+.star:hover:not(.readonly) {
+  transform: scale(1.1);
+}
+
+.rating-text {
+  font-size: 0.9rem;
+  color: #666;
+  font-weight: 500;
+  min-width: 40px;
+}
+
+/* Readonly variant */
+.star-rating.readonly .star {
+  cursor: default;
+}
+
+.star-rating.readonly .star:hover {
+  transform: none;
+}
+
+/* Large variant for product cards */
+.star-rating.large .star {
+  font-size: 1.5rem;
+}
+
+.star-rating.large .rating-text {
+  font-size: 1rem;
+}
+
+/* Small variant for lists */
+.star-rating.small .star {
+  font-size: 1rem;
+}
+
+.star-rating.small .rating-text {
+  font-size: 0.8rem;
+}
+
+/* Animation for rating changes */
+@keyframes starPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+.star.pulse {
+  animation: starPulse 0.3s ease;
+}
