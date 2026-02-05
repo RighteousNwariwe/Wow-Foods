@@ -8,9 +8,9 @@ import {
   GoogleAuthProvider,
   signInWithPopup
 } from 'firebase/auth';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { auth, firestore, storage } from '../config/firebase';
+import { auth, storage } from '../config/firebase';
+import { usersService } from '../services/databaseService';
 
 const AuthContext = createContext();
 
@@ -42,7 +42,7 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
-  // Function to save user details to Firestore
+  // Function to save user details to Firebase Realtime Database
   async function saveUserDetails(user, additionalData = {}) {
     try {
       if (!user || !user.uid) {
@@ -56,7 +56,6 @@ export const AuthProvider = ({ children }) => {
         photoURL = await uploadProfileImage(user.uid, additionalData.profileImage);
       }
 
-      const userRef = doc(firestore, 'users', user.uid);
       const userData = {
         uid: user.uid,
         email: user.email,
@@ -71,18 +70,8 @@ export const AuthProvider = ({ children }) => {
         provider: user.providerData[0]?.providerId || 'password'
       };
 
-      // Check if user already exists
-      const userDoc = await getDoc(userRef);
-      if (userDoc.exists()) {
-        // Update existing user
-        await setDoc(userRef, {
-          ...userData,
-          createdAt: userDoc.data().createdAt // Preserve original creation date
-        }, { merge: true });
-      } else {
-        // Create new user
-        await setDoc(userRef, userData);
-      }
+      // Save to Firebase Realtime Database
+      await usersService.createUser(userData);
 
       return userData;
     } catch (error) {
@@ -92,18 +81,11 @@ export const AuthProvider = ({ children }) => {
   }
 
   // Sign up function
-  async function signup(email, password, additionalData) {
+  async function signup(email, password, additionalData = {}) {
     try {
       const result = await createUserWithEmailAndPassword(auth, email, password);
-      const user = result.user;
-
-      // Save additional user data to Firestore
-      await saveUserDetails(user, {
-        ...additionalData,
-        createdAt: new Date().toISOString()
-      });
-
-      return user;
+      await saveUserDetails(result.user, additionalData);
+      return result.user;
     } catch (error) {
       console.error('Signup error:', error);
       throw error;
@@ -114,18 +96,7 @@ export const AuthProvider = ({ children }) => {
   async function login(email, password) {
     try {
       const result = await signInWithEmailAndPassword(auth, email, password);
-
-      // Check if user exists in Firestore
-      const userDocRef = doc(firestore, 'users', result.user.uid);
-      const userDoc = await getDoc(userDocRef);
-      if (!userDoc.exists()) {
-        await signOut(auth);
-        throw new Error('Account not registered. Please sign up first.');
-      }
-
-      // Update last login
-      await saveUserDetails(result.user, { lastLogin: new Date().toISOString() });
-
+      await saveUserDetails(result.user);
       return result.user;
     } catch (error) {
       console.error('Login error:', error);
@@ -133,26 +104,22 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
-  // Google sign in function
+  // Google sign-in function
   async function signInWithGoogle() {
     try {
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
 
-      // Save user details if new user
-      const userDocRef = doc(firestore, 'users', result.user.uid);
-      const userDoc = await getDoc(userDocRef);
-      if (!userDoc.exists()) {
-        await saveUserDetails(result.user, {
-          provider: 'google.com',
-          displayName: result.user.displayName,
-          photoURL: result.user.photoURL
-        });
-      }
+      // Automatically save Google users as customers
+      await saveUserDetails(result.user, {
+        userType: 'customer',
+        displayName: result.user.displayName,
+        photoURL: result.user.photoURL
+      });
 
       return result.user;
     } catch (error) {
-      console.error('Google sign in error:', error);
+      console.error('Google sign-in error:', error);
       throw error;
     }
   }
@@ -167,44 +134,72 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
-  // Password reset function
+  // Reset password function
   async function resetPassword(email) {
     try {
       await sendPasswordResetEmail(auth, email);
     } catch (error) {
-      console.error('Password reset error:', error);
+      console.error('Reset password error:', error);
       throw error;
     }
   }
 
-  // Check if user is admin
-  const isAdmin = currentUser?.email === 'wowfoods@gmail.com';
+  // Function to check if user is admin
+  function isAdmin() {
+    return userRole === 'admin';
+  }
 
-  // Get user role from Firestore
+  // Function to get user role
+  async function getUserRole(uid) {
+    try {
+      const user = await usersService.getUser(uid);
+      return user?.userType || 'customer';
+    } catch (error) {
+      console.error('Error fetching user role:', error);
+      return 'customer';
+    }
+  }
+
+  // Function to update user profile
+  async function updateUserProfile(userData) {
+    try {
+      if (!currentUser) {
+        throw new Error('No user logged in');
+      }
+
+      await usersService.updateUser(currentUser.uid, userData);
+
+      // Update the current user state with new data
+      setCurrentUser(prev => ({
+        ...prev,
+        displayName: userData.displayName || prev.displayName,
+        photoURL: userData.profileImage || prev.photoURL
+      }));
+
+    } catch (error) {
+      console.error('Error updating user profile:', error);
+      throw error;
+    }
+  }
+
+  // Listen for auth state changes
   useEffect(() => {
-    const fetchUserRole = async () => {
-      if (currentUser) {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      setCurrentUser(user);
+
+      if (user) {
         try {
-          const userDocRef = doc(firestore, 'users', currentUser.uid);
-          const userDoc = await getDoc(userDocRef);
-          if (userDoc.exists()) {
-            setUserRole(userDoc.data().userType || 'customer');
-          }
+          // Get user role from Realtime Database
+          const role = await getUserRole(user.uid);
+          setUserRole(role);
         } catch (error) {
           console.error('Error fetching user role:', error);
+          setUserRole('customer');
         }
       } else {
         setUserRole(null);
       }
-    };
 
-    fetchUserRole();
-  }, [currentUser]);
-
-  // Listen for auth state changes
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setCurrentUser(user);
       setLoading(false);
     });
 
@@ -213,15 +208,18 @@ export const AuthProvider = ({ children }) => {
 
   const value = {
     currentUser,
+    loading,
     userRole,
-    isAdmin,
     signup,
     login,
     logout,
     resetPassword,
     signInWithGoogle,
+    uploadProfileImage,
     saveUserDetails,
-    loading
+    updateUserProfile,
+    isAdmin,
+    getUserRole
   };
 
   return (

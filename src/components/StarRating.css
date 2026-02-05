@@ -1,5 +1,6 @@
 .star-rating {
   display: flex;
+  flex-direction: column;
   align-items: center;
   gap: 0.5rem;
 }
@@ -10,62 +11,70 @@
 }
 
 .star {
-  font-size: 1.2rem;
+  font-size: 1.5rem;
   color: #ddd;
   cursor: pointer;
-  transition: color 0.2s ease, transform 0.2s ease;
+  transition: all 0.2s ease;
   user-select: none;
 }
 
 .star.filled {
   color: #FFD700;
+  text-shadow: 0 0 2px rgba(255, 215, 0, 0.5);
 }
 
-.star:hover:not(.readonly) {
+.star:hover:not(.filled) {
+  color: #FFC700;
   transform: scale(1.1);
 }
 
-.rating-text {
-  font-size: 0.9rem;
+.star.filled:hover {
+  color: #FFD700;
+  transform: scale(1.1);
+}
+
+.rating-info {
+  text-align: center;
   color: #666;
-  font-weight: 500;
-  min-width: 40px;
+  font-size: 0.9rem;
 }
 
-/* Readonly variant */
-.star-rating.readonly .star {
-  cursor: default;
+.rating-text {
+  font-weight: 600;
+  color: #333;
 }
 
-.star-rating.readonly .star:hover {
-  transform: none;
-}
-
-/* Large variant for product cards */
-.star-rating.large .star {
-  font-size: 1.5rem;
-}
-
-.star-rating.large .rating-text {
-  font-size: 1rem;
-}
-
-/* Small variant for lists */
-.star-rating.small .star {
-  font-size: 1rem;
-}
-
-.star-rating.small .rating-text {
+.total-ratings {
+  color: #999;
   font-size: 0.8rem;
+  margin-left: 0.5rem;
 }
 
-/* Animation for rating changes */
-@keyframes starPulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.2); }
-  100% { transform: scale(1); }
+.average-info {
+  color: #666;
+  font-size: 0.8rem;
+  line-height: 1.4;
 }
 
-.star.pulse {
-  animation: starPulse 0.3s ease;
+.your-rating {
+  color: #DC2626;
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+.loading {
+  color: #999;
+  font-style: italic;
+  font-size: 0.9rem;
+}
+
+/* Responsive Design */
+@media (max-width: 480px) {
+  .star {
+    font-size: 1.25rem;
+  }
+
+  .rating-info {
+    font-size: 0.8rem;
+  }
 }

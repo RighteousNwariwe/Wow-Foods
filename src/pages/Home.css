@@ -5,48 +5,65 @@
 .hero {
   background: #000000;
   color: white;
-  padding: 4rem 2rem;
+  padding: 6rem 2rem;
   text-align: center;
+  position: relative;
+  overflow: hidden;
   border-bottom: 4px solid #FFD700;
 }
 
 .hero-content {
   max-width: 800px;
   margin: 0 auto;
+  position: relative;
+  z-index: 2;
 }
 
 .hero h1 {
-  font-size: 3rem;
-  margin-bottom: 1rem;
+  font-size: 3.5rem;
+  margin-bottom: 1.5rem;
+  font-weight: 700;
+  color: #FFD700;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .hero-subtitle {
-  font-size: 1.5rem;
-  margin-bottom: 1rem;
+  font-size: 1.8rem;
+  margin-bottom: 1.5rem;
   opacity: 0.95;
+  font-weight: 500;
+  color: white;
 }
 
 .hero-description {
-  font-size: 1.1rem;
-  margin-bottom: 2rem;
+  font-size: 1.2rem;
+  margin-bottom: 2.5rem;
   opacity: 0.9;
   line-height: 1.6;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+  color: white;
 }
 
 .hero-buttons {
   display: flex;
-  gap: 1rem;
+  gap: 1.5rem;
   justify-content: center;
   flex-wrap: wrap;
 }
 
 .btn {
-  padding: 0.75rem 2rem;
+  padding: 1rem 2.5rem;
   border-radius: 8px;
   font-weight: 600;
-  font-size: 1rem;
-  transition: all 0.3s;
+  font-size: 1.1rem;
+  transition: all 0.3s ease;
   display: inline-block;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 .btn-primary {
@@ -58,7 +75,7 @@
 .btn-primary:hover {
   background: #B91C1C;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
 }
 
 .btn-secondary {
@@ -70,6 +87,7 @@
 .btn-secondary:hover {
   background: #FFD700;
   color: #000000;
+  transform: translateY(-2px);
 }
 
 .btn-outline {
@@ -81,6 +99,7 @@
 .btn-outline:hover {
   background: #DC2626;
   color: white;
+  transform: translateY(-2px);
 }
 
 .container {
@@ -90,7 +109,7 @@
 }
 
 .features {
-  padding: 4rem 2rem;
+  padding: 5rem 0;
   background: white;
 }
 
@@ -98,48 +117,53 @@
   text-align: center;
   font-size: 2.5rem;
   margin-bottom: 3rem;
-  color: #333;
+  color: #000000;
+  font-weight: 700;
 }
 
 .features-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 2rem;
 }
 
 .feature {
   text-align: center;
   padding: 2rem;
-  border-radius: 12px;
   background: white;
+  border-radius: 12px;
   border: 2px solid #FFD700;
-  transition: transform 0.3s, box-shadow 0.3s;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .feature:hover {
   transform: translateY(-5px);
-  box-shadow: 0 8px 16px rgba(220, 38, 38, 0.2);
+  box-shadow: 0 8px 30px rgba(220, 38, 38, 0.2);
   border-color: #DC2626;
 }
 
 .feature-icon {
   font-size: 3rem;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
+  display: block;
 }
 
 .feature h3 {
   font-size: 1.5rem;
   margin-bottom: 1rem;
-  color: #333;
+  color: #000000;
+  font-weight: 600;
 }
 
 .feature p {
   color: #666;
   line-height: 1.6;
+  font-size: 1rem;
 }
 
 .featured-products {
-  padding: 4rem 2rem;
+  padding: 5rem 0;
   background: #FFF9E6;
 }
 
@@ -147,12 +171,13 @@
   text-align: center;
   font-size: 2.5rem;
   margin-bottom: 3rem;
-  color: #333;
+  color: #000000;
+  font-weight: 700;
 }
 
 .products-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: 2rem;
   margin-bottom: 3rem;
 }
@@ -161,18 +186,20 @@
   background: white;
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s, box-shadow 0.3s;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: 2px solid #FFD700;
 }
 
 .featured-product-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+  border-color: #DC2626;
 }
 
 .featured-product-card img {
   width: 100%;
-  height: 200px;
+  height: 250px;
   object-fit: cover;
 }
 
@@ -182,26 +209,27 @@
 
 .featured-product-info h3 {
   font-size: 1.5rem;
-  margin-bottom: 0.5rem;
-  color: #333;
+  margin-bottom: 1rem;
+  color: #000000;
+  font-weight: 600;
 }
 
 .featured-product-info p {
   color: #666;
-  margin-bottom: 1rem;
   line-height: 1.6;
+  margin-bottom: 1.5rem;
+  font-size: 1rem;
 }
 
 .featured-product-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 1rem;
 }
 
 .price {
   font-size: 1.5rem;
-  font-weight: bold;
+  font-weight: 700;
   color: #DC2626;
 }
 
@@ -210,46 +238,47 @@
 }
 
 .operating-hours {
-  padding: 4rem 2rem;
+  padding: 3rem 0;
   background: #DC2626;
   color: white;
+  text-align: center;
   border-top: 4px solid #FFD700;
 }
 
 .operating-hours h2 {
-  text-align: center;
-  font-size: 2.5rem;
+  font-size: 2rem;
   margin-bottom: 2rem;
+  color: #FFD700;
+  font-weight: 700;
 }
 
 .hours-content {
-  text-align: center;
   max-width: 600px;
   margin: 0 auto;
 }
 
 .hours-info h3 {
-  font-size: 2rem;
+  font-size: 1.5rem;
   margin-bottom: 1rem;
+  color: #FFD700;
+  font-weight: 600;
 }
 
 .hours-info p {
-  font-size: 1.1rem;
-  opacity: 0.9;
+  color: white;
+  line-height: 1.6;
   margin-bottom: 0.5rem;
+  font-size: 1rem;
 }
 
+/* Responsive Design */
 @media (max-width: 768px) {
-  .hero h1 {
-    font-size: 2rem;
+  .container {
+    padding: 0 1rem;
   }
   
-  .hero-subtitle {
-    font-size: 1.2rem;
-  }
-  
-  .hero-description {
-    font-size: 1rem;
+  .features {
+    padding: 3rem 0;
   }
   
   .features h2,
@@ -258,11 +287,29 @@
     font-size: 2rem;
   }
   
-  .products-grid {
-    grid-template-columns: 1fr;
-  }
-  
   .features-grid {
     grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  
+  .products-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  
+  .hero {
+    padding: 4rem 1rem;
+  }
+  
+  .hero h1 {
+    font-size: 2.5rem;
+  }
+  
+  .hero-subtitle {
+    font-size: 1.4rem;
+  }
+  
+  .hero-description {
+    font-size: 1.1rem;
   }
 }

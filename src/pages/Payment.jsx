@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { doc, updateDoc, getDoc } from 'firebase/firestore';
-import { firestore } from '../config/firebase';
+import { ordersService } from '../services/databaseService';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { storage } from '../config/firebase';
 import './Payment.css';
 
 const Payment = () => {
@@ -16,12 +17,16 @@ const Payment = () => {
     cardName: '',
     expiryDate: '',
     cvv: '',
-    saveCard: false
+    saveCard: false,
+    paymentProof: null,
+    paymentProofPreview: null
   });
 
   const [errors, setErrors] = useState({});
   const [isProcessing, setIsProcessing] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
+  const [submittedOrderId, setSubmittedOrderId] = useState(null);
 
   useEffect(() => {
     if (!currentUser) {
@@ -38,175 +43,159 @@ const Payment = () => {
   }, [currentUser, order, navigate]);
 
   const generateOrderId = () => {
-    const timestamp = Date.now().toString(36);
-    const randomStr = Math.random().toString(36).substring(2, 8);
-    return `WF-${timestamp}-${randomStr}`.toUpperCase();
+    const today = new Date();
+    const dateStr = today.getFullYear().toString() +
+      (today.getMonth() + 1).toString().padStart(2, '0') +
+      today.getDate().toString().padStart(2, '0');
+
+    // This should be replaced with a proper daily counter from the database
+    const randomNum = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+    return `WF${dateStr}${randomNum}`;
   };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    
+
     let formattedValue = value;
-    
-    // Format card number (add spaces every 4 digits)
+
     if (name === 'cardNumber') {
-      formattedValue = value.replace(/\s/g, '').substring(0, 16);
-      formattedValue = formattedValue.replace(/(.{4})/g, '$1 ').trim();
-    }
-    
-    // Format expiry date (MM/YY)
-    if (name === 'expiryDate') {
-      formattedValue = value.replace(/\D/g, '').substring(0, 4);
-      if (formattedValue.length >= 3) {
-        formattedValue = formattedValue.substring(0, 2) + '/' + formattedValue.substring(2);
-      }
-    }
-    
-    // Format CVV (numbers only, max 4 digits)
-    if (name === 'cvv') {
-      formattedValue = value.replace(/\D/g, '').substring(0, 4);
+      formattedValue = value.replace(/\s/g, '').replace(/(.{4})/g, '$1 ').trim();
+    } else if (name === 'expiryDate') {
+      formattedValue = value.replace(/\D/g, '').replace(/(.{2})/g, '$1/').trim();
     }
 
     setPaymentData(prev => ({
       ...prev,
       [name]: formattedValue
     }));
+  };
 
-    // Clear error when user starts typing
-    if (errors[name]) {
-      setErrors(prev => ({
-        ...prev,
-        [name]: ''
-      }));
+  const handleProofUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        setErrors(prev => ({ ...prev, paymentProof: 'File size must be less than 5MB' }));
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPaymentData(prev => ({
+          ...prev,
+          paymentProof: file,
+          paymentProofPreview: reader.result
+        }));
+        setErrors(prev => ({ ...prev, paymentProof: '' }));
+      };
+      reader.readAsDataURL(file);
     }
   };
 
-  const validatePayment = () => {
+  const uploadPaymentProof = async (file, orderId) => {
+    try {
+      const storageRef = ref(storage, `payment-proofs/${orderId}/${Date.now()}_${file.name}`);
+      const snapshot = await uploadBytes(storageRef, file);
+      const downloadURL = await getDownloadURL(snapshot.ref);
+      return downloadURL;
+    } catch (error) {
+      console.error('Error uploading payment proof:', error);
+      throw error;
+    }
+  };
+
+  const validateForm = () => {
     const newErrors = {};
 
-    // Card number validation (16 digits)
-    const cardNumberDigits = paymentData.cardNumber.replace(/\s/g, '');
-    if (!cardNumberDigits || cardNumberDigits.length !== 16) {
-      newErrors.cardNumber = 'Please enter a valid 16-digit card number';
-    }
-
-    // Card name validation
-    if (!paymentData.cardName.trim()) {
-      newErrors.cardName = 'Cardholder name is required';
-    }
-
-    // Expiry date validation (MM/YY format)
-    const expiryRegex = /^(0[1-9]|1[0-2])\/\d{2}$/;
-    if (!expiryRegex.test(paymentData.expiryDate)) {
-      newErrors.expiryDate = 'Please enter a valid expiry date (MM/YY)';
-    } else {
-      // Check if card is not expired
-      const [month, year] = paymentData.expiryDate.split('/');
-      const expiry = new Date(2000 + parseInt(year), parseInt(month) - 1);
-      const now = new Date();
-      if (expiry < now) {
-        newErrors.expiryDate = 'Card has expired';
-      }
-    }
-
-    // CVV validation (3-4 digits)
-    const cvvLength = paymentData.cvv.length;
-    if (!paymentData.cvv || cvvLength < 3 || cvvLength > 4) {
-      newErrors.cvv = 'Please enter a valid CVV (3-4 digits)';
+    if (!paymentData.paymentProof) {
+      newErrors.paymentProof = 'Please upload payment proof';
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const simulatePaymentProcessing = async () => {
-    // Simulate payment processing delay
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    // Simulate payment success (90% success rate for demo)
-    return Math.random() > 0.1;
-  };
-
-  const handlePayment = async (e) => {
+  const handleSubmitProof = async (e) => {
     e.preventDefault();
 
-    if (!validatePayment()) {
+    if (!validateForm()) {
       return;
     }
 
     setIsProcessing(true);
 
     try {
-      // Simulate payment processing
-      const paymentSuccessful = await simulatePaymentProcessing();
+      // Generate a temporary order ID for payment proof upload
+      const tempOrderId = `TEMP-${Date.now()}`;
+      let paymentProofUrl = '';
 
-      if (!paymentSuccessful) {
-        throw new Error('Payment declined. Please check your card details and try again.');
+      // Upload payment proof if provided
+      if (paymentData.paymentProof) {
+        paymentProofUrl = await uploadPaymentProof(paymentData.paymentProof, tempOrderId);
       }
 
-      // Generate order ID
-      const orderId = generateOrderId();
+      // Create payment proof record without order number
+      const paymentDataRecord = {
+        ...order,
+        customerEmail: currentUser.email,
+        customerName: currentUser.displayName || currentUser.email.split('@')[0],
+        userId: currentUser.uid,
+        status: 'pending_payment',
+        paymentProof: paymentProofUrl,
+        paymentMethod: 'proof_upload',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        tempId: tempOrderId
+      };
 
-      // Update order in Firestore with payment confirmation
-      const orderRef = doc(firestore, 'orders', order.id);
-      await updateDoc(orderRef, {
-        orderId: orderId,
-        status: 'confirmed',
-        paymentStatus: 'paid',
-        paymentMethod: 'card',
-        paymentDate: new Date().toISOString(),
-        confirmedAt: new Date().toISOString()
-      });
+      await ordersService.createOrder(paymentDataRecord);
 
-      // Clear cart
-      localStorage.removeItem('cartItems');
-
-      // Redirect to order confirmation with order ID
-      navigate('/order-confirmation', { 
-        state: { 
-          order: { 
-            ...order, 
-            orderId: orderId, 
-            status: 'confirmed',
-            paymentStatus: 'paid'
-          } 
-        } 
-      });
-
+      setSubmittedOrderId(tempOrderId);
+      setShowWhatsAppModal(true);
     } catch (error) {
-      console.error('Payment error:', error);
-      setErrors({ 
-        general: error.message || 'Payment failed. Please try again.' 
-      });
+      console.error('Error submitting payment proof:', error);
+      setErrors(prev => ({
+        ...prev,
+        submit: 'Failed to submit payment proof. Please try again.'
+      }));
     } finally {
       setIsProcessing(false);
     }
   };
 
+  const handleWhatsAppShare = () => {
+    const message = `Hello! I've just submitted payment proof for my order #${submittedOrderId}. Please check and confirm my payment. Thank you!`;
+    const phoneNumber = '27612345678'; // Replace with actual business WhatsApp number
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
+    setShowWhatsAppModal(false);
+    navigate('/order-confirmation', {
+      state: {
+        order: {
+          ...order,
+          id: submittedOrderId,
+          status: 'pending_payment'
+        }
+      }
+    });
+  };
+
+  const handleCloseModal = () => {
+    setShowWhatsAppModal(false);
+    navigate('/order-confirmation', {
+      state: {
+        order: {
+          ...order,
+          id: submittedOrderId,
+          status: 'pending_payment'
+        }
+      }
+    });
+  };
+
   if (loading) {
     return (
       <div className="payment-page">
-        <div className="container">
-          <div className="loading">
-            <h1>Loading payment information...</h1>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (!order) {
-    return (
-      <div className="payment-page">
-        <div className="container">
-          <div className="error-message">
-            <h1>Order Not Found</h1>
-            <p>Please start your order again.</p>
-            <button onClick={() => navigate('/cart')}>
-              Back to Cart
-            </button>
-          </div>
-        </div>
+        <div className="loading">Loading payment information...</div>
       </div>
     );
   }
@@ -214,156 +203,115 @@ const Payment = () => {
   return (
     <div className="payment-page">
       <div className="container">
-        <h1>Secure Payment</h1>
-        
+        <div className="payment-header">
+          <h1>Payment Proof Submission</h1>
+          <p>Upload your payment proof and we'll confirm your order</p>
+        </div>
+
         <div className="payment-content">
-          <div className="payment-form-section">
-            <form onSubmit={handlePayment} className="payment-form">
-              <h2>Payment Details</h2>
-              
-              {errors.general && (
-                <div className="error-message general-error">
-                  {errors.general}
-                </div>
-              )}
-
-              <div className="form-group">
-                <label htmlFor="cardNumber">Card Number *</label>
-                <input
-                  type="text"
-                  id="cardNumber"
-                  name="cardNumber"
-                  value={paymentData.cardNumber}
-                  onChange={handleInputChange}
-                  className={errors.cardNumber ? 'error' : ''}
-                  placeholder="1234 5678 9012 3456"
-                  maxLength="19"
-                  required
-                />
-                {errors.cardNumber && <span className="error-message">{errors.cardNumber}</span>}
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="cardName">Cardholder Name *</label>
-                <input
-                  type="text"
-                  id="cardName"
-                  name="cardName"
-                  value={paymentData.cardName}
-                  onChange={handleInputChange}
-                  className={errors.cardName ? 'error' : ''}
-                  placeholder="John Doe"
-                  required
-                />
-                {errors.cardName && <span className="error-message">{errors.cardName}</span>}
-              </div>
-
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="expiryDate">Expiry Date *</label>
-                  <input
-                    type="text"
-                    id="expiryDate"
-                    name="expiryDate"
-                    value={paymentData.expiryDate}
-                    onChange={handleInputChange}
-                    className={errors.expiryDate ? 'error' : ''}
-                    placeholder="MM/YY"
-                    maxLength="5"
-                    required
-                  />
-                  {errors.expiryDate && <span className="error-message">{errors.expiryDate}</span>}
-                </div>
-
-                <div className="form-group">
-                  <label htmlFor="cvv">CVV *</label>
-                  <input
-                    type="text"
-                    id="cvv"
-                    name="cvv"
-                    value={paymentData.cvv}
-                    onChange={handleInputChange}
-                    className={errors.cvv ? 'error' : ''}
-                    placeholder="123"
-                    maxLength="4"
-                    required
-                  />
-                  {errors.cvv && <span className="error-message">{errors.cvv}</span>}
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label className="checkbox-label">
-                  <input
-                    type="checkbox"
-                    name="saveCard"
-                    checked={paymentData.saveCard}
-                    onChange={handleInputChange}
-                  />
-                  Save card details for future purchases
-                </label>
-              </div>
-
-              <button
-                type="submit"
-                className="pay-button"
-                disabled={isProcessing}
-              >
-                {isProcessing ? (
-                  <>
-                    <div className="spinner"></div>
-                    Processing Payment...
-                  </>
-                ) : (
-                  `Pay R${order.total.toFixed(2)}`
-                )}
-              </button>
-            </form>
-          </div>
-
-          <div className="order-summary-section">
+          <div className="order-summary">
             <h2>Order Summary</h2>
             <div className="order-items">
-              {order.items?.map(item => (
-                <div key={item.id} className="order-item">
-                  <div className="order-item-info">
-                    <span className="item-name">{item.name}</span>
-                    <span className="item-quantity">x{item.quantity}</span>
-                  </div>
-                  <span className="item-total">R{(item.price * item.quantity).toFixed(2)}</span>
+              {order.items?.map((item, index) => (
+                <div key={index} className="order-item">
+                  <span>{item.name} x {item.quantity}</span>
+                  <span>R{(item.price * item.quantity).toFixed(2)}</span>
                 </div>
               ))}
             </div>
-            
-            <div className="order-totals">
-              <div className="total-row">
-                <span>Subtotal</span>
-                <span>R{order.subtotal?.toFixed(2)}</span>
-              </div>
-              {order.deliveryFee > 0 && (
-                <div className="total-row">
-                  <span>Delivery Fee</span>
-                  <span>R{order.deliveryFee.toFixed(2)}</span>
-                </div>
-              )}
-              <div className="total-row final-total">
-                <span>Total</span>
-                <span>R{order.total?.toFixed(2)}</span>
-              </div>
+            <div className="order-total">
+              <strong>Total: R{order.total?.toFixed(2)}</strong>
             </div>
+          </div>
 
-            <div className="security-info">
-              <h3>Secure Payment</h3>
-              <ul>
-                <li>🔒 SSL encrypted connection</li>
-                <li>🛡️ PCI DSS compliant</li>
-                <li>🔐 Your card details are secure</li>
-                <li>✅ No card details stored on our servers</li>
-              </ul>
-            </div>
+          <div className="payment-form">
+            <h2>Upload Payment Proof</h2>
+            <form onSubmit={handleSubmitProof}>
+              <div className="form-group">
+                <label>Payment Proof *</label>
+                <div className="file-upload">
+                  <input
+                    type="file"
+                    id="paymentProof"
+                    accept="image/*,.pdf"
+                    onChange={handleProofUpload}
+                    style={{ display: 'none' }}
+                  />
+                  <label
+                    htmlFor="paymentProof"
+                    className="file-upload-label"
+                  >
+                    {paymentData.paymentProofPreview ? (
+                      <img
+                        src={paymentData.paymentProofPreview}
+                        alt="Payment proof preview"
+                        className="proof-preview"
+                      />
+                    ) : (
+                      <div className="upload-placeholder">
+                        <span>📷</span>
+                        <p>Click to upload payment proof</p>
+                        <small>JPG, PNG, PDF (Max 5MB)</small>
+                      </div>
+                    )}
+                  </label>
+                </div>
+                {errors.paymentProof && (
+                  <span className="error">{errors.paymentProof}</span>
+                )}
+              </div>
+
+              {errors.submit && (
+                <div className="error-message">{errors.submit}</div>
+              )}
+
+              <button
+                type="submit"
+                className="submit-proof-btn"
+                disabled={isProcessing || !paymentData.paymentProof}
+              >
+                {isProcessing ? 'Submitting...' : 'Submit Proof of Payment'}
+              </button>
+            </form>
           </div>
         </div>
       </div>
+
+      {/* WhatsApp Modal */}
+      {showWhatsAppModal && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h3>Payment Proof Submitted!</h3>
+              <button
+                onClick={handleCloseModal}
+                className="close-btn"
+              >
+                ×
+              </button>
+            </div>
+            <div className="modal-body">
+              <p>Thank you! Your payment proof has been submitted successfully.</p>
+              <p>Order ID: <strong>#{submittedOrderId}</strong></p>
+              <p>Would you like to notify us via WhatsApp for faster processing?</p>
+            </div>
+            <div className="modal-actions">
+              <button
+                onClick={handleWhatsAppShare}
+                className="whatsapp-btn"
+              >
+                📱 Send WhatsApp Message
+              </button>
+              <button
+                onClick={handleCloseModal}
+                className="skip-btn"
+              >
+                Skip
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

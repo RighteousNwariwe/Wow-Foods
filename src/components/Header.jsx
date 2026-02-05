@@ -6,7 +6,7 @@ import './Header.css';
 
 const Header = () => {
   const { getCartItemCount } = useCart();
-  const { currentUser, isAdmin, logout } = useAuth();
+  const { currentUser, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const cartItemCount = getCartItemCount();
@@ -53,13 +53,6 @@ const Header = () => {
           <Link to="/track-order" className={isActive('/track-order') ? 'active' : ''}>
             Track Order
           </Link>
-
-          {/* Admin link - only visible to admin users */}
-          {isAdmin && (
-            <Link to="/admin/orders" className={isActive('/admin/orders') ? 'active' : ''}>
-              Admin
-            </Link>
-          )}
 
           <Link to="/cart" className={`cart-link ${isActive('/cart') ? 'active' : ''}`}>
             <span>Cart</span>

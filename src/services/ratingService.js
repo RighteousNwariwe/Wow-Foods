@@ -1,19 +1,20 @@
-import { doc, setDoc, getDoc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
-import { firestore } from '../config/firebase';
+import { ref, set, get, update, remove, onValue } from 'firebase/database';
+import { database } from '../config/firebase';
 
 class RatingService {
   // Get product ratings
   async getProductRatings(productId) {
     try {
-      const ratingDoc = await getDoc(doc(firestore, 'productRatings', productId.toString()));
+      const ratingRef = ref(database, `productRatings/${productId}`);
+      const snapshot = await get(ratingRef);
       
-      if (ratingDoc.exists()) {
-        return ratingDoc.data();
+      if (snapshot.exists()) {
+        return snapshot.val();
       }
       
       return {
         productId: productId,
-        ratings: [],
+        ratings: {},
         averageRating: 0,
         totalRatings: 0
       };
@@ -21,7 +22,7 @@ class RatingService {
       console.error('Error getting product ratings:', error);
       return {
         productId: productId,
-        ratings: [],
+        ratings: {},
         averageRating: 0,
         totalRatings: 0
       };
@@ -31,56 +32,44 @@ class RatingService {
   // Add or update a user's rating for a product
   async rateProduct(productId, userId, rating, userName) {
     try {
-      const ratingRef = doc(firestore, 'productRatings', productId.toString());
-      const ratingDoc = await getDoc(ratingRef);
+      const ratingRef = ref(database, `productRatings/${productId}`);
+      const snapshot = await get(ratingRef);
       
       let ratingData;
       
-      if (ratingDoc.exists()) {
-        ratingData = ratingDoc.data();
+      if (snapshot.exists()) {
+        ratingData = snapshot.val();
         
-        // Check if user has already rated this product
-        const existingRatingIndex = ratingData.ratings.findIndex(
-          r => r.userId === userId
-        );
-        
-        if (existingRatingIndex !== -1) {
-          // Update existing rating
-          ratingData.ratings[existingRatingIndex] = {
-            userId,
-            userName,
-            rating,
-            timestamp: new Date().toISOString()
-          };
-        } else {
-          // Add new rating
-          ratingData.ratings.push({
-            userId,
-            userName,
-            rating,
-            timestamp: new Date().toISOString()
-          });
-        }
+        // Update or add user rating
+        ratingData.ratings[userId] = {
+          userId,
+          userName,
+          rating,
+          timestamp: new Date().toISOString()
+        };
       } else {
         // Create new rating document
         ratingData = {
           productId,
-          ratings: [{
-            userId,
-            userName,
-            rating,
-            timestamp: new Date().toISOString()
-          }]
+          ratings: {
+            [userId]: {
+              userId,
+              userName,
+              rating,
+              timestamp: new Date().toISOString()
+            }
+          }
         };
       }
       
       // Calculate average rating
-      const totalRating = ratingData.ratings.reduce((sum, r) => sum + r.rating, 0);
-      ratingData.averageRating = totalRating / ratingData.ratings.length;
-      ratingData.totalRatings = ratingData.ratings.length;
+      const ratingsArray = Object.values(ratingData.ratings);
+      const totalRating = ratingsArray.reduce((sum, r) => sum + r.rating, 0);
+      ratingData.averageRating = totalRating / ratingsArray.length;
+      ratingData.totalRatings = ratingsArray.length;
       
-      // Save to Firestore
-      await setDoc(ratingRef, ratingData);
+      // Save to Realtime Database
+      await set(ratingRef, ratingData);
       
       return ratingData;
     } catch (error) {
@@ -93,7 +82,7 @@ class RatingService {
   async getUserRating(productId, userId) {
     try {
       const ratingData = await this.getProductRatings(productId);
-      const userRating = ratingData.ratings.find(r => r.userId === userId);
+      const userRating = ratingData.ratings[userId];
       
       return userRating ? userRating.rating : 0;
     } catch (error) {
@@ -117,32 +106,53 @@ class RatingService {
   // Delete a user's rating for a product
   async removeUserRating(productId, userId) {
     try {
-      const ratingRef = doc(firestore, 'productRatings', productId.toString());
-      const ratingDoc = await getDoc(ratingRef);
-      
-      if (!ratingDoc.exists()) {
-        return null;
-      }
-      
-      const ratingData = ratingDoc.data();
-      ratingData.ratings = ratingData.ratings.filter(r => r.userId !== userId);
+      const ratingRef = ref(database, `productRatings/${productId}/ratings/${userId}`);
+      await remove(ratingRef);
       
       // Recalculate average rating
-      if (ratingData.ratings.length > 0) {
-        const totalRating = ratingData.ratings.reduce((sum, r) => sum + r.rating, 0);
-        ratingData.averageRating = totalRating / ratingData.ratings.length;
-      } else {
-        ratingData.averageRating = 0;
+      const productRef = ref(database, `productRatings/${productId}`);
+      const snapshot = await get(productRef);
+      
+      if (snapshot.exists()) {
+        const ratingData = snapshot.val();
+        const ratingsArray = Object.values(ratingData.ratings || {});
+        
+        if (ratingsArray.length > 0) {
+          const totalRating = ratingsArray.reduce((sum, r) => sum + r.rating, 0);
+          ratingData.averageRating = totalRating / ratingsArray.length;
+        } else {
+          ratingData.averageRating = 0;
+        }
+        ratingData.totalRatings = ratingsArray.length;
+        
+        await update(productRef, {
+          averageRating: ratingData.averageRating,
+          totalRatings: ratingData.totalRatings
+        });
+        
+        return ratingData;
       }
-      ratingData.totalRatings = ratingData.ratings.length;
       
-      await setDoc(ratingRef, ratingData);
-      
-      return ratingData;
+      return null;
     } catch (error) {
       console.error('Error removing user rating:', error);
       throw error;
     }
+  }
+
+  // Listen for real-time updates to product ratings
+  onProductRatingsChange(productId, callback) {
+    const ratingRef = ref(database, `productRatings/${productId}`);
+    
+    return onValue(ratingRef, (snapshot) => {
+      const data = snapshot.exists() ? snapshot.val() : {
+        productId: productId,
+        ratings: {},
+        averageRating: 0,
+        totalRatings: 0
+      };
+      callback(data);
+    });
   }
 }
 
