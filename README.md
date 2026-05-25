@@ -1,137 +1,235 @@
-# Woow Foods E-commerce Website
+# 🍔 Wow Foods - E-Commerce Platform
 
-A modern React e-commerce website for Woow Foods, a restaurant serving healthy and affordable food to CPUT students and staff across Cape Town campuses.
+A **full-featured e-commerce web application** for a local fast-food restaurant expanding its digital presence across Cape Town. Built with modern web technologies, this platform demonstrates production-ready features including user authentication, real-time order management, payment processing, and an admin dashboard.
 
-## Features
+**Live Demo:** [https://wow-foods-5edc4.web.app/](https://wow-foods-5edc4.web.app/)
 
-- 🍔 **Product Catalog** - Browse menu items including kotas, vetkoeks, gatsbys, burgers, and beverages
-- 🛒 **Shopping Cart** - Add items, adjust quantities, and manage your cart
-- 💳 **Checkout Process** - Complete order form with delivery information
-- 📦 **Order Confirmation** - Order summary and confirmation page
-- 🎉 **Catering Services** - Request catering quotes for events
-- ℹ️ **About Page** - Learn about Woow Foods' story and journey
-- 📱 **Responsive Design** - Works on desktop, tablet, and mobile devices
+---
 
-## Tech Stack
+## ✨ Key Features
 
-- **React 18** - UI library
-- **React Router 6** - Routing
-- **Vite** - Build tool and dev server
-- **Context API** - State management for cart
-- **CSS3** - Styling with modern design
+### 🛍️ Customer-Facing
+- **Product Catalog** - Browse menu items with detailed descriptions and pricing
+- **Shopping Cart** - Add/remove items with real-time cart updates
+- **User Authentication** - Email/password and Google Sign-In integration
+- **Secure Checkout** - Multi-step checkout process with order validation
+- **Payment Processing** - Flexible payment methods with proof upload support
+- **Order Tracking** - Real-time order status updates
+- **User Profiles** - Personalized user profiles with order history
+- **Catering Services** - Dedicated catering inquiries for bulk orders
 
-## Getting Started
+### 👨‍💼 Admin Features
+- **Admin Dashboard** - Comprehensive order management interface
+- **Order Management** - View, update, and track all orders in real-time
+- **Protected Routes** - Role-based access control for admin functionality
+- **Real-Time Updates** - Live order status notifications
+
+### 🎨 Technical Highlights
+- **Responsive Design** - Mobile-first approach with CSS Grid and Flexbox
+- **Modern UI/UX** - Clean, professional interface with brand consistency
+- **Form Validation** - Client-side validation with user-friendly error handling
+- **File Upload** - Support for payment proof and profile image uploads
+- **Real-Time Database** - Firebase Realtime Database for instant updates
+
+---
+
+## 🛠️ Tech Stack
+
+| Category | Technologies |
+|----------|---------------|
+| **Frontend** | React 18, React Router v6, JSX |
+| **Styling** | CSS3 (Grid, Flexbox, Animations) |
+| **Build Tool** | Vite (Lightning-fast builds) |
+| **Backend & Auth** | Firebase (Authentication & Realtime Database) |
+| **Storage** | Firebase Cloud Storage (Images & Payment Proofs) |
+| **Hosting** | Firebase Hosting |
+
+**Languages:** JavaScript (68.6%), CSS (29.3%), HTML (2.1%)
+
+---
+
+## 🚀 Getting Started
 
 ### Prerequisites
-
-- Node.js (v16 or higher)
-- npm or yarn
+- Node.js (v14 or higher)
+- npm or yarn package manager
+- Firebase project credentials
 
 ### Installation
 
-1. Install dependencies:
 ```bash
-npm install
-```
+# Clone the repository
+git clone https://github.com/RighteousNwariwe/Wow-Foods.git
+cd Wow-Foods
 
-2. Start the development server:
-```bash
+# Install dependencies
+npm install
+
+# Set up Firebase configuration
+# Create src/config/firebase.js with your Firebase credentials
+
+# Start development server
 npm run dev
 ```
 
-3. Open your browser and navigate to the URL shown in the terminal (typically `http://localhost:5173`)
-
-### Building for Production
-
+### Build for Production
 ```bash
 npm run build
-```
-
-The production build will be in the `dist` directory.
-
-### Preview Production Build
-
-```bash
 npm run preview
 ```
 
-## Project Structure
+---
+
+## 📁 Project Structure
 
 ```
-woow-foods-ecommerce/
-├── src/
-│   ├── components/          # Reusable components
-│   │   ├── Header.jsx       # Navigation header
-│   │   ├── Footer.jsx       # Site footer
-│   │   ├── ProductCard.jsx  # Product display card
-│   │   └── CartItem.jsx     # Cart item component
-│   ├── pages/               # Page components
-│   │   ├── Home.jsx         # Homepage
-│   │   ├── Products.jsx     # Product listing page
-│   │   ├── Cart.jsx         # Shopping cart page
-│   │   ├── Checkout.jsx     # Checkout page
-│   │   ├── OrderConfirmation.jsx  # Order confirmation
-│   │   ├── Catering.jsx     # Catering services
-│   │   └── About.jsx        # About page
-│   ├── context/             # Context providers
-│   │   └── CartContext.jsx  # Shopping cart state
-│   ├── data/                # Data files
-│   │   └── products.js      # Product data
-│   ├── App.jsx              # Main app component
-│   ├── main.jsx             # Entry point
-│   └── index.css            # Global styles
-├── index.html               # HTML template
-├── package.json             # Dependencies
-└── vite.config.js          # Vite configuration
+src/
+├── components/        # Reusable React components
+│   ├── Header.jsx
+│   ├── Footer.jsx
+│   └── ProtectedRoute.jsx
+├── pages/            # Page components
+│   ├── Home.jsx
+│   ├── Products.jsx
+│   ├── Cart.jsx
+│   ├── Checkout.jsx
+│   ├── Payment.jsx
+│   ├── OrderConfirmation.jsx
+│   ├── Login.jsx
+│   ├── Profile.jsx
+│   ├── AdminDashboard.jsx
+│   ├── TrackOrder.jsx
+│   └── Catering.jsx
+├── context/          # React Context for state management
+│   ├── CartContext.jsx
+│   └── AuthContext.jsx
+├── services/         # Database and API services
+│   └── databaseService.js
+├── config/           # Configuration files
+│   └── firebase.js
+├── App.jsx
+└── main.jsx
 ```
 
-## Features in Detail
+---
+
+## 🎯 Core Functionality
+
+### Authentication System
+- Email/password authentication
+- Google Sign-In integration
+- User registration with profile creation
+- Admin authentication with role-based access
+- Persistent session management
 
 ### Shopping Cart
-- Add/remove items
-- Adjust quantities
-- Real-time total calculation
-- Free delivery for orders over R100
-- Cart persistence (state managed in context)
+- Add/remove products
+- Real-time cart state management
+- Order total calculation
+- Cart persistence across sessions
 
-### Checkout Process
-- Form validation
-- Delivery information collection
-- Campus selection (CPUT locations)
-- Special instructions support
-- Order summary sidebar
+### Order Management
+- Order creation with validation
+- Real-time order tracking
+- Payment proof submission
+- Order confirmation notifications
+- Admin order status updates
 
-### Product Catalog
-- Category filtering (All Items, Meals, Beverages)
-- Search functionality
-- Responsive grid layout
-- Product details and pricing
+### Database Schema (Firebase Realtime Database)
+```
+├── users/          # User profiles and preferences
+├── orders/         # Order records with status tracking
+└── menu/           # Menu items and pricing
+```
 
-## Business Information
+---
 
-Woow Foods operates in:
-- CPUT Cape Town Campus (7:30 AM - 7:30 PM)
-- CPUT Bellville Campus
-- CPUT D6 Campus
+## 🔐 Security Features
 
-The business offers:
-- Daily cafeteria operations
-- Weekend catering services
-- On-site staff for events
-- Traditional Cape Town favorites
+- **Protected Routes** - Admin pages require authentication
+- **Role-Based Access Control** - Different user types (customer, student, staff)
+- **Firebase Authentication** - Secure user authentication
+- **File Size Validation** - Prevents malicious file uploads
+- **Input Validation** - Form validation on client-side
 
-## Future Enhancements
+---
 
-Potential improvements for the future:
-- Backend API integration
-- Payment gateway integration
-- User authentication
-- Order tracking
-- Email notifications
-- Inventory management
-- Admin dashboard
-- Delivery tracking
+## 🎨 Design Highlights
 
-## License
+- **Color Scheme**: Professional black, red (#DC2626), and gold (#FFD700)
+- **Typography**: Clear hierarchy with font-weight variations
+- **Responsive Layouts**: CSS Grid and Flexbox for all screen sizes
+- **Interactive Elements**: Hover effects and smooth transitions
+- **Accessibility**: Semantic HTML and proper ARIA labels
 
-This project is created for Woow Foods business use.
+---
+
+## 📊 Business Value
+
+This project demonstrates:
+- **Real-world e-commerce implementation** for a growing restaurant chain
+- **Digital transformation** enabling online ordering and catering services
+- **Scalability** - Architecture supports multi-branch expansion
+- **Customer engagement** through personalized profiles and order tracking
+- **Business intelligence** via admin dashboard and order analytics
+
+---
+
+## 🔄 Recent Updates
+
+- ✅ Multi-step checkout process implementation
+- ✅ Real-time order tracking system
+- ✅ Admin dashboard with order management
+- ✅ Payment proof upload feature
+- ✅ Firebase hosting deployment
+
+---
+
+## 📈 Future Enhancements
+
+- [ ] Payment gateway integration (Stripe/PayPal)
+- [ ] SMS order notifications
+- [ ] Customer reviews and ratings
+- [ ] Loyalty program system
+- [ ] Analytics dashboard for business insights
+- [ ] Mobile app (React Native)
+- [ ] Advanced search and filtering
+- [ ] Inventory management system
+
+---
+
+## 💡 Developer Skills Demonstrated
+
+✓ **Frontend Development** - React hooks, context API, component composition  
+✓ **State Management** - Context API for global state  
+✓ **Routing** - React Router for multi-page navigation  
+✓ **Firebase Integration** - Auth, Realtime Database, Cloud Storage  
+✓ **Form Handling** - Complex forms with validation  
+✓ **Responsive Design** - Mobile-first CSS approach  
+✓ **Real-time Updates** - Firestore listeners for live data  
+✓ **File Uploads** - Image and document handling  
+✓ **Build Tools** - Vite configuration and optimization  
+✓ **Version Control** - Git and GitHub workflows  
+
+---
+
+## 📝 License
+
+This project is open source and available under the MIT License.
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request with improvements or bug fixes.
+
+---
+
+## 📧 Contact
+
+**Developer:** [Righteous Nwariwe](https://github.com/RighteousNwariwe)  
+**Live Website:** [Wow Foods](https://wow-foods-5edc4.web.app/)
+
+---
+
+**Thank you for checking out Wow Foods! 🚀**
