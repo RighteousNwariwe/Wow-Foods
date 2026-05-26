@@ -213,18 +213,6 @@ This project demonstrates:
 
 ---
 
-## 📝 License
-
-This project is open source and available under the MIT License.
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request with improvements or bug fixes.
-
----
-
 ## 📧 Contact
 
 **Developer:** [Righteous Nwariwe](https://github.com/RighteousNwariwe)  
@@ -232,4 +220,3 @@ Contributions are welcome! Please feel free to submit a Pull Request with improv
 
 ---
 
-**Thank you for checking out Wow Foods! 🚀**
